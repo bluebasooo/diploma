@@ -1,7 +1,8 @@
 package entity
 
+// storage
 type FilePart struct {
 	ID       string `json:"id"`
-	Sz       string `json:"sz"`
+	Sz       int64  `json:"sz"`
 	Resource []byte
 }

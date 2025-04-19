@@ -2,14 +2,6 @@ package entity
 
 import "time"
 
-type FileMeta struct {
-	ID        string    `json:"id"`
-	PartsIDs  []string  `json:"parts"`
-	Size      int64     `json:"size"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
 type VideoShortPreview struct {
 	ID          string `json:"id"`
 	Img         string `json:"img"`
