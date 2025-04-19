@@ -11,13 +11,8 @@ var (
 	mockedFileChunks map[string][]byte
 )
 
-func GetFilePart(id string, part string) ([]byte, error) {
-	parts, err := MockedFileRead()
-	if err != nil {
-		return nil, err
-	}
-
-	return parts[part], nil
+func GetFilePartInterval(id string, part string) (map[string][]byte, error) {
+	return MockedFileRead()
 }
 
 func MockedFileRead() (map[string][]byte, error) {

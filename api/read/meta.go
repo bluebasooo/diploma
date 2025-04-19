@@ -21,12 +21,7 @@ func ReadFileMeta(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(meta)
 }
 
-func VideoPreview(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("preview"))
-}
-
 func InitFileMetaApi(router *mux.Router) {
-	fileApi := router.PathPrefix("/file").Subrouter()
+	fileApi := router.PathPrefix("/meta").Subrouter()
 	fileApi.HandleFunc("/{id}/meta", ReadFileMeta).Methods("GET")
-	fileApi.HandleFunc("/{id}/preview", VideoPreview).Methods("GET")
 }
