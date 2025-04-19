@@ -33,7 +33,8 @@ type MongoConfig struct {
 }
 
 type MinioConfig struct {
-	URI      string
-	User     string
-	Password string
+	URI        string
+	AccessKey  string
+	SecretKey  string
+	BucketName string
 }

@@ -2,9 +2,14 @@ package service
 
 import (
 	"dev/bluebasooo/video-platform/api/dto"
+	"dev/bluebasooo/video-platform/repo/entity"
+	"log"
 )
 
 const ChunckSz = 1024 * 1024
+
+// TMP solution need service type
+var fileRepository *entity.FileRepository
 
 func GeneratePlan(meta *dto.PlainFileMetaDto) (*dto.WritePlanDto, error) {
 	chunks := meta.SizeInBytes / ChunckSz
@@ -32,14 +37,29 @@ func GeneratePlan(meta *dto.PlainFileMetaDto) (*dto.WritePlanDto, error) {
 	return &plan, nil
 }
 
-func Write(taskID string, hash string, bytes []byte) error {
-	cacheTasks.doneOp(taskID, hash)
-
-	if cacheTasks.checkOfDone(taskID) {
-		cacheTasks.doneTask(taskID)
+func Write(taskID string, hash string, bytes []byte, username string) error {
+	filePart := entity.FilePart{
+		ID:       hash, // from plan
+		Sz:       int64(len(bytes)),
+		Resource: bytes,
+		FromUser: username,
 	}
 
-	// TODO: save bytes to file
+	// io operation
+	// more smart way on wait group
+	go func() {
+		err := fileRepository.UploadFilePart(&filePart)
+		if err != nil {
+			cacheTasks.err(taskID, hash)
+			log.Println("Failed to upload file part:", err)
+		}
+
+		cacheTasks.doneOp(taskID, hash)
+
+		if cacheTasks.checkOfDone(taskID) {
+			cacheTasks.doneTask(taskID)
+		}
+	}()
 
 	return nil
 }

@@ -139,3 +139,19 @@ func GenerateRandom64CharHash() (string, error) {
 	// Конвертируем байты в 64-символьную hex строку
 	return hex.EncodeToString(bytes), nil
 }
+
+func (cache *TaskCache) err(taskID string, hash string) {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+
+	task, ok := cache.tasks[taskID]
+	if !ok {
+		return
+	}
+
+	op, ok := task.Ops[hash]
+	if !ok {
+		return
+	}
+	op.Status = Error
+}
