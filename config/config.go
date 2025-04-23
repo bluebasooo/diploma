@@ -12,9 +12,9 @@ func GetApplicationConfig() *ApplicationConfig {
 			CollectionsNames: []string{},
 		},
 		MinioConfig: MinioConfig{
-			URI:      os.Getenv("MINIO_URI"),
-			User:     os.Getenv("MINIO_USER"),
-			Password: os.Getenv("MINIO_PASSWORD"),
+			URI:       os.Getenv("MINIO_URI"),
+			AccessKey: os.Getenv("MINIO_USER"),
+			SecretKey: os.Getenv("MINIO_PASSWORD"),
 		},
 	}
 }
