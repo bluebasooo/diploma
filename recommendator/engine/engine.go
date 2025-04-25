@@ -2,6 +2,7 @@ package engine
 
 import (
 	"math"
+	"sort"
 )
 
 const maxAngle = 0.1
@@ -42,6 +43,17 @@ func calculateCenter(dots []Dot) map[string]float64 {
 func (bucket *Bucket) shouldAddToBucket(dotToAdd *Dot) bool {
 	distance := dotToAdd.distToCenter(bucket.Center)
 
+	dists := values(bucket.DotsToDistToCenter)
+
+	sort.Float64Slice(dists).Sort()
+
+	diffs := diffBetween(dists)
+	maxOverDiffs := maxOver(diffs)
+
+	return math.Abs(distance-maxOverDiffs) > maxAngle
+}
+
+func (bucket *Bucket) canDifferentiateBucket() bool {
 	dists := values(bucket.DotsToDistToCenter)
 
 	diffs := diffBetween(dists)

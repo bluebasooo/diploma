@@ -2,6 +2,7 @@ package service
 
 import (
 	"dev/bluebasooo/video-platform/api/dto"
+	"dev/bluebasooo/video-platform/repo"
 	"dev/bluebasooo/video-platform/repo/entity"
 	"log"
 )
@@ -9,7 +10,7 @@ import (
 const ChunckSz = 1024 * 1024
 
 // TMP solution need service type
-var fileRepository *entity.FileRepository
+var fileRepository *repo.FileRepository
 
 func GeneratePlan(meta *dto.PlainFileMetaDto) (*dto.WritePlanDto, error) {
 	chunks := meta.SizeInBytes / ChunckSz
