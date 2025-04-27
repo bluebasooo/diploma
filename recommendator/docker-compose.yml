@@ -1,0 +1,10 @@
+version: '3'
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    ports:
+      - "8123:8123"   # HTTP интерфейс
+      - "9000:9000"   # Native интерфейс (TCP)
+    volumes:
+      - ./clickhouse_data:/var/lib/clickhouse
