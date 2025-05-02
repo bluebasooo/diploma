@@ -12,16 +12,21 @@ func GetApplicationConfig() *ApplicationConfig {
 			CollectionsNames: []string{},
 		},
 		MinioConfig: MinioConfig{
-			URI:       os.Getenv("MINIO_URI"),
-			AccessKey: os.Getenv("MINIO_USER"),
-			SecretKey: os.Getenv("MINIO_PASSWORD"),
+			URI:        os.Getenv("MINIO_URI"),
+			AccessKey:  os.Getenv("MINIO_ACCESS_KEY"),
+			SecretKey:  os.Getenv("MINIO_SECRET_KEY"),
+			BucketName: os.Getenv("MINIO_BUCKET_NAME"),
+		},
+		ElasticConfig: ElasticConfig{
+			URI: os.Getenv("ELASTIC_URI"),
 		},
 	}
 }
 
 type ApplicationConfig struct {
-	MongoConfig MongoConfig
-	MinioConfig MinioConfig
+	MongoConfig   MongoConfig
+	MinioConfig   MinioConfig
+	ElasticConfig ElasticConfig
 }
 
 type MongoConfig struct {
@@ -37,4 +42,10 @@ type MinioConfig struct {
 	AccessKey  string
 	SecretKey  string
 	BucketName string
+}
+
+type ElasticConfig struct {
+	URI      string
+	Username string
+	Password string
 }

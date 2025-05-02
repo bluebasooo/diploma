@@ -1,7 +1,5 @@
 package engine
 
-import "dev/bluebasooo/video-recomendator/service/model"
-
 type Dot struct {
 	ID       string
 	History  map[string]float64 // history about 30 days
@@ -22,12 +20,6 @@ func getDots(ids []string) []Dot {
 		dots = append(dots, *getDot(id))
 	}
 	return dots
-}
-
-func fromHistory(history []model.History) *Dot 
-	
-	
-	return dot
 }
 
 type PlainHistory struct {

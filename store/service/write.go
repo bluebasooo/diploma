@@ -12,7 +12,7 @@ const ChunckSz = 1024 * 1024
 // TMP solution need service type
 var fileRepository *repo.FileRepository
 
-func GeneratePlan(meta *dto.PlainFileMetaDto) (*dto.WritePlanDto, error) {
+func GeneratePlan(meta *dto.FileMetaPlanDto) (*dto.WritePlanDto, error) {
 	chunks := meta.SizeInBytes / ChunckSz
 	overlap := meta.SizeInBytes%ChunckSz == 0
 	if overlap {
