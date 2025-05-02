@@ -50,4 +50,5 @@ func resolveMeta(opType opType, indexName string, id string) *search.Meta {
 	case Delete:
 		return &search.Meta{Delete: &search.IndexPreamble{Index: indexName, ID: id}}
 	}
+	return nil
 }

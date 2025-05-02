@@ -42,5 +42,3 @@ type VideoStats struct {
 	Likes    int64 `bson:"likes"`
 	Dislikes int64 `bson:"dislikes"`
 }
-
-type Comment struct{}
