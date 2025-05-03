@@ -2,6 +2,7 @@ package service
 
 import (
 	"dev/bluebasooo/video-platform/repo"
+	"dev/bluebasooo/video-platform/repo/entity"
 	"fmt"
 	"log"
 	"os"
@@ -14,7 +15,7 @@ var (
 	fileMetaRepository *repo.FileMetaRepository // tmp need service type
 )
 
-func GetFilePartInterval(id string, part string) (map[string][]byte, error) {
+func GetFilePartInterval(userId string, id string, part string) (map[string][]byte, error) {
 	if isMocked {
 		return MockedFileRead()
 	}
@@ -27,7 +28,12 @@ func GetFilePartInterval(id string, part string) (map[string][]byte, error) {
 	interval := getIntervalOfParts(meta.PartSequence, part)
 	fileChunks := make(map[string][]byte)
 	for _, part := range interval {
-		partBytes, err := fileRepository.DownloadFilePart(part)
+		filePart := entity.FilePart{
+			FileID:   id,
+			ID:       part,
+			FromUser: userId,
+		}
+		partBytes, err := fileRepository.DownloadFilePart(&filePart)
 		if err != nil {
 			return nil, err
 		}

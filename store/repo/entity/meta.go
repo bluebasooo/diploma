@@ -10,6 +10,7 @@ type FileMeta struct {
 	CreatedAt    time.Time      `bson:"createdAt"`
 	UpdatedAt    time.Time      `bson:"updatedAt"`
 	PartSequence []string       `bson:"partSequence"`
+	IsDraft      bool           `bson:"isDraft"`
 }
 
 type FileMetaPart struct {

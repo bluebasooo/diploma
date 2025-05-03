@@ -14,6 +14,7 @@ func WriteFile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	taskID := vars["taskId"]
 	hash := vars["hash"]
+	username := vars["username"]
 
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil { // TODO: handle error
@@ -21,7 +22,7 @@ func WriteFile(w http.ResponseWriter, r *http.Request) {
 		return // no handle bytes
 	}
 
-	err = service.Write(taskID, hash, bytes)
+	err = service.Write(taskID, hash, bytes, username)
 	if err != nil { // TODO: handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return // no handle bytes
@@ -31,7 +32,7 @@ func WriteFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func GeneratePlan(w http.ResponseWriter, r *http.Request) {
-	var planDto dto.PlainFileMetaDto
+	var planDto dto.FileMetaPlanDto
 	err := json.NewDecoder(r.Body).Decode(&planDto)
 	if err != nil { // TODO: handle error
 		http.Error(w, err.Error(), http.StatusInternalServerError)

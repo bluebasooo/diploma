@@ -1,4 +1,4 @@
-package write
+package write_api
 
 import (
 	"context"

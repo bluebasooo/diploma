@@ -17,13 +17,13 @@ func (r *BulkRequest) toReader() *bytes.Reader {
 	for _, doc := range r.Instructions {
 		meta, err := json.Marshal(doc.Meta)
 		if err != nil {
-			log.Fatalf("Error marshaling document %s: %s", doc.ID, err)
+			log.Fatalf("Error marshaling document %s: %s", doc.Meta.Index.ID, err)
 		}
 		meta = append(meta, byte('\n'))
 
 		data, err := json.Marshal(doc)
 		if err != nil {
-			log.Fatalf("Error marshaling document %s: %s", doc.ID, err)
+			log.Fatalf("Error marshaling document %s: %s", doc.Meta.Index.ID, err)
 		}
 		data = append(data, byte('\n'))
 

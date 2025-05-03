@@ -14,12 +14,13 @@ import (
 func ReadFilePart(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
+	userId := vars["userId"]
 	id := vars["id"]
 	part := vars["part"]
 
 	body := bytes.Buffer{}
 	answer := multipart.NewWriter(&body)
-	chunks, err := service.GetFilePartInterval(id, part)
+	chunks, err := service.GetFilePartInterval(userId, id, part)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

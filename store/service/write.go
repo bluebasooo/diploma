@@ -38,12 +38,13 @@ func GeneratePlan(meta *dto.FileMetaPlanDto) (*dto.WritePlanDto, error) {
 	return &plan, nil
 }
 
-func Write(taskID string, hash string, bytes []byte, username string) error {
+func Write(taskID string, hash string, bytes []byte, userID string) error {
 	filePart := entity.FilePart{
-		ID:       hash, // from plan
+		FileID:   taskID, // idk - this file ID i think
+		ID:       hash,   // from plan
 		Sz:       int64(len(bytes)),
 		Resource: bytes,
-		FromUser: username,
+		FromUser: userID,
 	}
 
 	// io operation

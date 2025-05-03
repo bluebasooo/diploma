@@ -16,15 +16,15 @@ func NewFileRepository(objectStorage obj_storage.ObjectStorage) *FileRepository 
 }
 
 func (r *FileRepository) UploadFilePart(file *entity.FilePart) error {
-	filePath := generateFilePath(file.FromUser, file.ID)
+	filePath := generateFilePath(file.FromUser, file.FileID, file.ID)
 	return r.objectStorage.UploadFile(filePath, r.bucketName, file.Resource)
 }
 
 func (r *FileRepository) DownloadFilePart(file *entity.FilePart) ([]byte, error) {
-	filePath := generateFilePath(file.FromUser, file.ID)
+	filePath := generateFilePath(file.FromUser, file.FileID, file.ID)
 	return r.objectStorage.DownloadFile(filePath, r.bucketName)
 }
 
-func generateFilePath(username string, fileID string) string {
-	return fmt.Sprint("%s/%s", username, fileID)
+func generateFilePath(userId string, fileID string, part string) string {
+	return fmt.Sprintf("%s/%s/%s", userId, fileID, part)
 }
