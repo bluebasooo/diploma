@@ -1,0 +1,50 @@
+paths:
+  /comments/{videoId}:
+    get:
+      tags:
+        - comments
+      summary: Получить комментарии к видео
+      description: Возвращает список комментариев к видео с пагинацией
+      operationId: getComments
+      parameters:
+        - name: videoId
+          in: path
+          description: ID видео
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Количество комментариев на странице
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../../dto/schemas.yaml#/components/schemas/CommentResponse'
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+        '404':
+          description: Видео не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse' 

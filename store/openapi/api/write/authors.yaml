@@ -1,0 +1,33 @@
+paths:
+  /authors/create:
+    post:
+      tags:
+        - authors
+      summary: Создать нового автора
+      description: Создает нового автора с указанным именем пользователя
+      operationId: createAuthor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../../dto/schemas.yaml#/components/schemas/CreateAuthorRequest'
+      responses:
+        '201':
+          description: Автор успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/AuthorResponse'
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+        '409':
+          description: Автор с таким именем уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse' 

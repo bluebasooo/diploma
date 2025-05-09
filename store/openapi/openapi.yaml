@@ -1,0 +1,44 @@
+openapi: 3.0.0
+info:
+  title: Video Store API
+  description: API для хранения и управления видео
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+  - url: https://api.example.com
+    description: Продакшн сервер
+
+tags:
+  - name: authors
+    description: Операции с авторами
+  - name: comments
+    description: Операции с комментариями
+  - name: file
+    description: Операции с файлами
+  - name: preview
+    description: Операции с превью видео
+  - name: search
+    description: Поиск видео
+
+paths:
+  /authors/{authorId}:
+    $ref: './api/read/authors.yaml#/paths/~1authors~1{authorId}'
+  /comments/{videoId}:
+    $ref: './api/read/comments.yaml#/paths/~1comments~1{videoId}'
+  /file/{fileId}/{part}:
+    $ref: './api/read/file.yaml#/paths/~1file~1{fileId}~1{part}'
+  /meta/{id}/meta:
+    $ref: './api/read/file.yaml#/paths/~1meta~1{id}~1meta'
+  /preview/{id}/preview:
+    $ref: './api/read/preview.yaml#/paths/~1preview~1{id}~1preview'
+  /search:
+    $ref: './api/read/search.yaml#/paths/~1search'
+  /authors/create:
+    $ref: './api/write/authors.yaml#/paths/~1authors~1create'
+  /comments:
+    $ref: './api/write/comments.yaml#/paths/~1comments'
+  /file/write/{taskId}/{hash}:
+    $ref: './api/write/file.yaml#/paths/~1file~1write~1{taskId}~1{hash}'
+  /file/write/plan:
+    $ref: './api/write/file.yaml#/paths/~1file~1write~1plan' 

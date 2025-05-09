@@ -1,0 +1,33 @@
+paths:
+  /comments:
+    post:
+      tags:
+        - comments
+      summary: Создать новый комментарий
+      description: Создает новый комментарий к видео
+      operationId: createComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../../dto/schemas.yaml#/components/schemas/CreateCommentRequest'
+      responses:
+        '201':
+          description: Комментарий успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/CommentResponse'
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+        '404':
+          description: Видео не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse' 

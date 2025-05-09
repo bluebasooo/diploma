@@ -1,0 +1,44 @@
+paths:
+  /search:
+    get:
+      tags:
+        - search
+      summary: Поиск видео
+      description: Возвращает список видео, соответствующих поисковому запросу
+      operationId: searchVideos
+      parameters:
+        - name: query
+          in: query
+          description: Поисковый запрос
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Количество результатов на странице
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../../dto/schemas.yaml#/components/schemas/VideoSearchResponse'
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse' 

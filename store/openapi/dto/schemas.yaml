@@ -1,0 +1,345 @@
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Описание ошибки
+      required:
+        - error
+
+    AuthorResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID автора
+        username:
+          type: string
+          description: Имя пользователя
+        img_link:
+          type: string
+          description: Ссылка на аватар
+        stats:
+          type: object
+          properties:
+            subscribers:
+              type: integer
+              description: Количество подписчиков
+            likes:
+              type: integer
+              description: Количество лайков
+            views:
+              type: integer
+              description: Количество просмотров
+        subscriptions:
+          type: array
+          description: Список подписок
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: ID автора
+              username:
+                type: string
+                description: Имя пользователя
+              img_link:
+                type: string
+                description: Ссылка на аватар
+      required:
+        - id
+        - username
+
+    CommentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID комментария
+        videoId:
+          type: string
+          description: ID видео
+        message:
+          type: string
+          description: Текст комментария
+        likes:
+          type: integer
+          description: Количество лайков
+        dislikes:
+          type: integer
+          description: Количество дизлайков
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID автора
+            username:
+              type: string
+              description: Имя пользователя
+        childs:
+          type: array
+          description: Дочерние комментарии
+          items:
+            $ref: '#/components/schemas/CommentResponse'
+        parentId:
+          type: string
+          description: ID родительского комментария
+        rootId:
+          type: string
+          description: ID корневого комментария
+        updatedAt:
+          type: string
+          format: date-time
+          description: Время последнего обновления
+      required:
+        - id
+        - videoId
+        - message
+        - author
+
+    FileMetaResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID файла
+        parts:
+          type: array
+          description: Части файла
+          items:
+            type: object
+            properties:
+              hash:
+                type: string
+                description: Хеш части
+              sz:
+                type: integer
+                description: Размер части в байтах
+              s3Url:
+                type: string
+                description: URL в S3
+        fullSz:
+          type: integer
+          description: Общий размер файла
+        partSequence:
+          type: array
+          description: Последовательность частей
+          items:
+            type: string
+      required:
+        - id
+        - parts
+        - fullSz
+        - partSequence
+
+    VideoPreviewResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Название видео
+        description:
+          type: string
+          description: Описание видео
+        author:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Имя автора
+            img:
+              type: string
+              description: Ссылка на аватар
+            subsNum:
+              type: integer
+              description: Количество подписчиков
+        durationMs:
+          type: integer
+          description: Длительность в миллисекундах
+        stats:
+          type: object
+          properties:
+            views:
+              type: integer
+              description: Количество просмотров
+            likes:
+              type: integer
+              description: Количество лайков
+            dislikes:
+              type: integer
+              description: Количество дизлайков
+        createdAt:
+          type: string
+          format: date-time
+          description: Время создания
+        commentTreeId:
+          type: string
+          description: ID дерева комментариев
+      required:
+        - name
+        - author
+        - durationMs
+        - stats
+
+    VideoShortPreviewResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID видео
+        img:
+          type: string
+          description: Ссылка на превью
+        name:
+          type: string
+          description: Название видео
+        durationMs:
+          type: integer
+          description: Длительность в миллисекундах
+        author:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Имя автора
+            img:
+              type: string
+              description: Ссылка на аватар
+            subsNum:
+              type: integer
+              description: Количество подписчиков
+        views:
+          type: integer
+          description: Количество просмотров
+      required:
+        - id
+        - img
+        - name
+        - author
+        - views
+
+    VideoSearchResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID видео
+        name:
+          type: string
+          description: Название видео
+        description:
+          type: string
+          description: Описание видео
+        author:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Имя автора
+            img:
+              type: string
+              description: Ссылка на аватар
+            subsNum:
+              type: integer
+              description: Количество подписчиков
+      required:
+        - id
+        - name
+        - author
+
+    CreateAuthorRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Имя пользователя
+      required:
+        - username
+
+    CreateCommentRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID комментария
+        videoId:
+          type: string
+          description: ID видео
+        message:
+          type: string
+          description: Текст комментария
+        likes:
+          type: integer
+          description: Количество лайков
+        dislikes:
+          type: integer
+          description: Количество дизлайков
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+              description: ID автора
+            username:
+              type: string
+              description: Имя пользователя
+        childs:
+          type: array
+          description: Дочерние комментарии
+          items:
+            $ref: '#/components/schemas/CommentResponse'
+        parentId:
+          type: string
+          description: ID родительского комментария
+        rootId:
+          type: string
+          description: ID корневого комментария
+        updatedAt:
+          type: string
+          format: date-time
+          description: Время последнего обновления
+      required:
+        - videoId
+        - message
+        - author
+
+    GeneratePlanRequest:
+      type: object
+      properties:
+        taskId:
+          type: string
+          description: ID задачи
+        sizeInBytes:
+          type: integer
+          description: Размер файла в байтах
+      required:
+        - taskId
+        - sizeInBytes
+
+    GeneratePlanResponse:
+      type: object
+      properties:
+        taskId:
+          type: string
+          description: ID задачи
+        ops:
+          type: array
+          description: Операции
+          items:
+            type: object
+            properties:
+              hashOperation:
+                type: string
+                description: Хеш операции
+              bytesFrom:
+                type: integer
+                description: Начальный байт
+              bytesTo:
+                type: integer
+                description: Конечный байт
+      required:
+        - taskId
+        - ops 

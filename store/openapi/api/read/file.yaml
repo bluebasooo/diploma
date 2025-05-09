@@ -1,0 +1,75 @@
+paths:
+  /file/{fileId}/{part}:
+    get:
+      tags:
+        - file
+      summary: Получить часть файла
+      description: Возвращает указанную часть файла
+      operationId: getFilePart
+      parameters:
+        - name: fileId
+          in: path
+          description: ID файла
+          required: true
+          schema:
+            type: string
+        - name: part
+          in: path
+          description: Номер части файла
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+        '404':
+          description: Файл не найден
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+
+  /meta/{id}/meta:
+    get:
+      tags:
+        - file
+      summary: Получить метаданные файла
+      description: Возвращает метаданные файла по его ID
+      operationId: getFileMeta
+      parameters:
+        - name: id
+          in: path
+          description: ID файла
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/FileMetaResponse'
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+        '404':
+          description: Файл не найден
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse' 

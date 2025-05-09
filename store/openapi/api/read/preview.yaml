@@ -1,0 +1,34 @@
+paths:
+  /preview/{id}/preview:
+    get:
+      tags:
+        - preview
+      summary: Получить превью видео
+      description: Возвращает превью видео по его ID
+      operationId: getVideoPreview
+      parameters:
+        - name: id
+          in: path
+          description: ID видео
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/VideoPreviewResponse'
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+        '404':
+          description: Видео не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse' 

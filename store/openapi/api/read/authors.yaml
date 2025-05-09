@@ -1,0 +1,34 @@
+paths:
+  /authors/{authorId}:
+    get:
+      tags:
+        - authors
+      summary: Получить информацию об авторе
+      description: Возвращает информацию об авторе по его ID
+      operationId: getAuthor
+      parameters:
+        - name: authorId
+          in: path
+          description: ID автора
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/AuthorResponse'
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+        '404':
+          description: Автор не найден
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse' 

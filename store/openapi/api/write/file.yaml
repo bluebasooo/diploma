@@ -1,0 +1,70 @@
+paths:
+  /file/write/{taskId}/{hash}:
+    post:
+      tags:
+        - file
+      summary: Записать часть файла
+      description: Записывает часть файла с указанным хешем
+      operationId: writeFilePart
+      parameters:
+        - name: taskId
+          in: path
+          description: ID задачи
+          required: true
+          schema:
+            type: string
+        - name: hash
+          in: path
+          description: Хеш части файла
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '201':
+          description: Часть файла успешно записана
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+        '404':
+          description: Задача не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse'
+
+  /file/write/plan:
+    post:
+      tags:
+        - file
+      summary: Создать план записи файла
+      description: Создает план записи файла с указанным размером
+      operationId: generateWritePlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '../../dto/schemas.yaml#/components/schemas/GeneratePlanRequest'
+      responses:
+        '201':
+          description: План успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/GeneratePlanResponse'
+        '400':
+          description: Ошибка в запросе
+          content:
+            application/json:
+              schema:
+                $ref: '../../dto/schemas.yaml#/components/schemas/ErrorResponse' 
