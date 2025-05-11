@@ -4,14 +4,16 @@ services:
     container_name: video-platform 
     build:
       context: .
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
     depends_on:
       - mongodb
+      - elasticsearch
+      - minio
     networks:
       - app-network
 
@@ -38,6 +40,7 @@ services:
    ports:
      - "9000:9000"
      - "9001:9001"
+   restart: always
    environment:
      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -55,6 +58,7 @@ services:
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - xpack.security.enabled=false # Отключаем аутентификацию для разработки
+    restart: always
     volumes:
       - es_data:/usr/share/elasticsearch/data
     ports:

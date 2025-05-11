@@ -13,10 +13,14 @@ import (
 	"log"
 )
 
+var isLocalDevelopment = false
+
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if isLocalDevelopment {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
 	}
 
 	config := config2.GetApplicationConfig()

@@ -1,7 +1,7 @@
 FROM golang:latest as build
 WORKDIR /go/src/app
 COPY . .
-RUN go build ./cmd/main.go
+RUN go build ./main.go
 
 FROM ubuntu:22.04 as production
 WORKDIR /application
