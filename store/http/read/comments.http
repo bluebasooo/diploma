@@ -1,0 +1,2 @@
+GET http://localhost:8080/comments/video123?pageNum=0&pageSize=10
+Accept: application/json

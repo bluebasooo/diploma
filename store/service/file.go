@@ -1,7 +1,6 @@
 package service
 
 import (
-	"dev/bluebasooo/video-platform/repo"
 	"dev/bluebasooo/video-platform/repo/entity"
 	"fmt"
 	"log"
@@ -10,12 +9,11 @@ import (
 )
 
 var (
-	mockedFileChunks   map[string][]byte
-	isMocked           bool                     = true
-	fileMetaRepository *repo.FileMetaRepository // tmp need service type
+	mockedFileChunks map[string][]byte
+	isMocked         bool = false // tmp need service type
 )
 
-func GetFilePartInterval(userId string, id string, part string) (map[string][]byte, error) {
+func GetFilePartInterval(userId string, id string, partId string) (map[string][]byte, error) {
 	if isMocked {
 		return MockedFileRead()
 	}
@@ -25,7 +23,7 @@ func GetFilePartInterval(userId string, id string, part string) (map[string][]by
 		return nil, err
 	}
 
-	interval := getIntervalOfParts(meta.PartSequence, part)
+	interval := getIntervalOfParts(meta.PartSequence, partId)
 	fileChunks := make(map[string][]byte)
 	for _, part := range interval {
 		filePart := entity.FilePart{
@@ -65,8 +63,8 @@ func getIntervalOfParts(parts []string, target string) []string {
 		startInclusive = 0
 	}
 	endExclusive := targetIndex + 1
-	if endExclusive >= len(parts) {
-		endExclusive = len(parts) - 1
+	if endExclusive > len(parts) {
+		endExclusive = len(parts)
 	}
 
 	// guaranted that slice does not changes after

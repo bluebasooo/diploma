@@ -1,0 +1,17 @@
+# Файлы окружения
+.env
+.env.local
+.env*.local
+
+# Логи и временные файлы
+logs/
+*.log
+tmp/
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+
+# Docker
+docker-compose.override.yml

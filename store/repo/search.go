@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"context"
 	"dev/bluebasooo/video-platform/repo/entity"
 	"dev/bluebasooo/video-platform/search"
 	"encoding/json"
@@ -24,8 +25,26 @@ func (r *SearchRepo) init() {
 	r.initIndex(authorIndexName, authorMapping)
 }
 
+func (r *SearchRepo) isIndexInitilized(indexName string) bool {
+	client := r.elasticDB.GetClient()
+	res, _ := client.Indices.Exists(
+		[]string{indexName},
+		client.Indices.Exists.WithContext(context.Background()),
+	)
+
+	if res.IsError() {
+		return false
+	}
+
+	return true
+}
+
 func (r *SearchRepo) initIndex(indexName string, mapping string) {
 	es := r.elasticDB.GetClient()
+
+	if r.isIndexInitilized(indexName) {
+		return
+	}
 
 	resp, err := es.Indices.Create(indexName, es.Indices.Create.WithBody(strings.NewReader(mapping)))
 	if err != nil {
@@ -96,18 +115,28 @@ func (r *SearchRepo) SearchVideos(searched string) ([]entity.VideoSearchResult, 
 	}
 	defer resp.Body.Close()
 
+	//var str string
+	//bytes, _ := io.ReadAll(resp.Body)
+	//json.Unmarshal(bytes, &str)
+
 	if resp.IsError() {
 		return nil, fmt.Errorf("error searching videos: %s", resp.Status())
 	}
 
-	var decodedResponse search.SearchResponse[entity.VideoSearchResult]
+	var decodedResponse search.SearchResponse[entity.VideoIndex]
 	if err := json.NewDecoder(resp.Body).Decode(&decodedResponse); err != nil {
 		return nil, err
 	}
 
 	var result []entity.VideoSearchResult
 	for _, hit := range decodedResponse.Hits.Hits {
-		result = append(result, hit.Source)
+		result = append(result, entity.VideoSearchResult{
+			Searchable: entity.Searchable{
+				ID:    hit.ID,
+				Score: hit.Score,
+			},
+			VideoIndex: hit.Source,
+		})
 	}
 
 	return result, nil
@@ -131,17 +160,31 @@ func (r *SearchRepo) SearchAuthors(query string) ([]entity.AuthorSearchResult, e
 		return nil, fmt.Errorf("error searching authors: %s", resp.Status())
 	}
 
-	var decodedResponse search.SearchResponse[entity.AuthorSearchResult]
+	var decodedResponse search.SearchResponse[entity.AuthorIndex]
 	if err := json.NewDecoder(resp.Body).Decode(&decodedResponse); err != nil {
 		return nil, err
 	}
 
 	var result []entity.AuthorSearchResult
 	for _, hit := range decodedResponse.Hits.Hits {
-		result = append(result, hit.Source)
+		result = append(result, entity.AuthorSearchResult{
+			Searchable: entity.Searchable{
+				ID:    hit.ID,
+				Score: hit.Score,
+			},
+			AuthorIndex: hit.Source,
+		})
 	}
 	return result, nil
 }
+
+var all = `
+{
+	"query": {
+		"match_all": {}
+	}
+}
+`
 
 var defaultSearchAuthorQuery = `
 {
@@ -236,8 +279,8 @@ var defaultSearchVideoQuery = `
 }
 `
 
-var videoIndexName = "video_index"
-var authorIndexName = "author_index"
+var videoIndexName = "video-index"
+var authorIndexName = "author-index"
 
 var videoMapping = `
 {

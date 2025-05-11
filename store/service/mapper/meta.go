@@ -7,6 +7,7 @@ import (
 
 func ToFileMetaDto(meta *entity.FileMeta) *dto.FileMetaDto {
 	parts := make([]dto.FileMetaPartDto, 0, len(meta.Parts))
+
 	for _, part := range meta.Parts {
 		partDto := *toFileMetaPartDto(&part)
 		parts = append(parts, partDto)

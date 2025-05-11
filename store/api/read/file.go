@@ -14,7 +14,7 @@ import (
 func ReadFilePart(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	userId := vars["userId"]
+	userId := r.Header.Get("user_id")
 	id := vars["id"]
 	part := vars["part"]
 
@@ -45,5 +45,5 @@ func ReadFilePart(w http.ResponseWriter, r *http.Request) {
 
 func InitFileReadApi(router *mux.Router) {
 	fileAPI := router.PathPrefix("/file").Subrouter()
-	fileAPI.HandleFunc("/{id}/{part}/", ReadFilePart).Methods("GET")
+	fileAPI.HandleFunc("/{id}/{part}", ReadFilePart).Methods("GET")
 }

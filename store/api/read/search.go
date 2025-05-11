@@ -9,7 +9,7 @@ import (
 )
 
 func FindVideos(w http.ResponseWriter, r *http.Request) {
-	query := mux.Vars(r)["q"]
+	query := r.URL.Query().Get("q")
 
 	videos, err := service.FindVideos(query)
 	if err != nil {

@@ -29,8 +29,9 @@ func NewElasticDB(config *config.ElasticConfig) (*ElasticDB, error) {
 }
 
 func connectToElasticDB(config *config.ElasticConfig) (*elasticsearch.Client, error) {
+	address := fmt.Sprintf("http://%s", config.Uri())
 	cfg := elasticsearch.Config{
-		Addresses: []string{config.URI},
+		Addresses: []string{address},
 		Username:  config.Username,
 		Password:  config.Password,
 	}

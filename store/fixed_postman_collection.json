@@ -1,0 +1,640 @@
+{
+  "info": {
+    "_postman_id": "1234567-89ab-cdef-0123-456789abcdef",
+    "name": "Video Platform API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "read_api",
+      "item": [
+        {
+          "name": "authors",
+          "item": [
+            {
+              "name": "Get Author",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/authors/{authorId}",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "authors",
+                    "{authorId}"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": {
+                        "raw": "{{baseUrl}}/authors/123"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "id": 123,
+                      "username": "test_author",
+                      "img_link": "https://example.com/avatar.jpg",
+                      "stats": {
+                        "subscribers": 1000,
+                        "likes": 5000,
+                        "views": 10000
+                      },
+                      "subscriptions": [
+                        {
+                          "id": 456,
+                          "username": "another_author",
+                          "img_link": "https://example.com/avatar2.jpg"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "comments",
+          "item": [
+            {
+              "name": "Get Comments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/comments/{videoId}?pageNum=0&pageSize=10",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "comments",
+                    "{videoId}"
+                  ],
+                  "query": [
+                    {
+                      "key": "pageNum",
+                      "value": "0"
+                    },
+                    {
+                      "key": "pageSize",
+                      "value": "10"
+                    }
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": {
+                        "raw": "{{baseUrl}}/comments/video123?pageNum=0&pageSize=10"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": [
+                      {
+                        "id": "comment1",
+                        "videoId": "video123",
+                        "message": "Great video!",
+                        "likes": 10,
+                        "dislikes": 2,
+                        "author": {
+                          "id": "user123",
+                          "username": "test_user"
+                        },
+                        "childs": [],
+                        "parentId": "",
+                        "rootId": "comment1",
+                        "updatedAt": "2024-03-21T12:00:00Z"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "file",
+          "item": [
+            {
+              "name": "Read File Part",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/file/{fileId}/{part}",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "file",
+                    "{fileId}",
+                    "{part}"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": {
+                        "raw": "{{baseUrl}}/file/file123/1"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "multipart/form-data"
+                      }
+                    ],
+                    "body": "Binary file content"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "meta",
+          "item": [
+            {
+              "name": "Read File Meta",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/meta/{id}/meta",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "meta",
+                    "{id}",
+                    "meta"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": {
+                        "raw": "{{baseUrl}}/meta/file123/meta"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "id": "file123",
+                      "parts": [
+                        {
+                          "hash": "abc123",
+                          "sz": 1024,
+                          "s3Url": "https://s3.example.com/file123/part1"
+                        }
+                      ],
+                      "fullSz": 1024,
+                      "partSequence": [
+                        "abc123"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "preview",
+          "item": [
+            {
+              "name": "Video Preview",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/preview/{id}/preview",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "preview",
+                    "{id}",
+                    "preview"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": {
+                        "raw": "{{baseUrl}}/preview/video123/preview"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "name": "Test Video",
+                      "description": "Video description",
+                      "author": {
+                        "name": "Test Author",
+                        "img": "https://example.com/avatar.jpg",
+                        "subsNum": 1000
+                      },
+                      "durationMs": 60000,
+                      "stats": {
+                        "views": 1000,
+                        "likes": 100,
+                        "dislikes": 10
+                      },
+                      "createdAt": "2024-03-21T12:00:00Z",
+                      "commentTreeId": "tree123"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Get Main Page Video Previews",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/preview/main-page/{userID}",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "preview",
+                    "main-page",
+                    "{userID}"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": {
+                        "raw": "{{baseUrl}}/preview/main-page/user123"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": [
+                      {
+                        "id": "video123",
+                        "img": "https://example.com/thumbnail.jpg",
+                        "name": "Test Video",
+                        "durationMs": 60000,
+                        "author": {
+                          "name": "Test Author",
+                          "img": "https://example.com/avatar.jpg",
+                          "subsNum": 1000
+                        },
+                        "views": 1000
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "search",
+          "item": [
+            {
+              "name": "Find Videos",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/search/videos?q=test",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "search",
+                    "videos"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "test"
+                    }
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "GET",
+                      "url": {
+                        "raw": "{{baseUrl}}/search/videos?q=test"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": [
+                      {
+                        "id": "video123",
+                        "name": "Test Video",
+                        "description": "Video description",
+                        "author": {
+                          "name": "Test Author",
+                          "img": "https://example.com/avatar.jpg",
+                          "subsNum": 1000
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "write_api",
+      "item": [
+        {
+          "name": "authors",
+          "item": [
+            {
+              "name": "Create Author",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"username\": \"test_author\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/authors/create",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "authors",
+                    "create"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": {
+                        "raw": "{{baseUrl}}/authors/create"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "comments",
+          "item": [
+            {
+              "name": "Create Comment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"id\": \"comment1\",\n    \"videoId\": \"video123\",\n    \"message\": \"Great video!\",\n    \"likes\": 0,\n    \"dislikes\": 0,\n    \"author\": {\n        \"id\": \"user123\",\n        \"username\": \"test_user\"\n    },\n    \"childs\": [],\n    \"parentId\": \"\",\n    \"rootId\": \"comment1\",\n    \"updatedAt\": \"2024-03-21T12:00:00Z\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/comments/",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "comments"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": {
+                        "raw": "{{baseUrl}}/comments/"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "file",
+          "item": [
+            {
+              "name": "Write File",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/octet-stream"
+                  }
+                ],
+                "body": {
+                  "mode": "binary",
+                  "raw": "Binary file content"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/file/write/{taskId}/{hash}",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "file",
+                    "write",
+                    "{taskId}",
+                    "{hash}"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": {
+                        "raw": "{{baseUrl}}/file/write/task123/abc123"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Generate Plan",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"taskId\": \"task123\",\n    \"sizeInBytes\": 1024\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/file/write/plan",
+                  "host": [
+                    "localhost"
+                  ],
+                  "path": [
+                    "file",
+                    "write",
+                    "plan"
+                  ],
+                  "port": "8080"
+                },
+                "response": [
+                  {
+                    "name": "Success Response",
+                    "originalRequest": {
+                      "method": "POST",
+                      "url": {
+                        "raw": "{{baseUrl}}/file/write/plan"
+                      }
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "taskId": "task123",
+                      "ops": [
+                        {
+                          "hashOperation": "abc123",
+                          "bytesFrom": 0,
+                          "bytesTo": 1024
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

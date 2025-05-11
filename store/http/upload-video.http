@@ -1,0 +1,43 @@
+### Create Author
+POST http://localhost:8080/authors/create
+Content-Type: application/json
+
+{
+  "username": "test_author"
+}
+
+### Generate Plan
+POST http://localhost:8080/file/write/plan
+Content-Type: application/json
+
+{
+  "sizeInBytes": 1024
+}
+
+### Upload Preview
+POST http://localhost:8080/preview/{{id}}
+Content-Type: application/json
+user_id: 681f98e307ea0ea1385f3865
+
+
+{
+  "name": "test_video",
+  "description": "test video description",
+  "durationMs": 205
+}
+
+### Upload VideoParts
+POST http://localhost:8080/file/write/task123/abc123
+Content-Type: application/octet-stream
+
+### Read meta
+GET http://localhost:8080/meta/681f98fc07ea0ea1385f3866
+Accept: application/json
+
+### Read preview
+GET http://localhost:8080/preview/681f98fc07ea0ea1385f3866
+Accept: application/json
+
+### Read video
+GET http://localhost:8080/file/file123/1
+Accept: multipart/form-data

@@ -5,7 +5,7 @@ type CreateAuthorDto struct {
 }
 
 type AuthorDto struct {
-	ID            int64             `json:"id"`
+	ID            string            `json:"id"`
 	Username      string            `json:"username"`
 	ImgLink       string            `json:"img_link"`
 	Stats         StatsDto          `json:"stats"`
@@ -19,7 +19,7 @@ type StatsDto struct {
 }
 
 type SubscriptionDto struct {
-	ID       int64  `json:"id"`
+	ID       string `json:"id"`
 	Username string `json:"username"`
 	ImgLink  string `json:"img_link"`
 }

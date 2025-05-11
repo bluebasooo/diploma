@@ -7,7 +7,7 @@ import (
 
 func ToAuthorDto(author *entity.Author, subscribtions []entity.Author) *dto.AuthorDto {
 	return &dto.AuthorDto{
-		ID:       author.ID,
+		ID:       author.ID.Hex(),
 		Username: author.Username,
 		ImgLink:  author.ImgLink,
 		Stats: dto.StatsDto{
@@ -24,7 +24,7 @@ func toSubscriptionDto(authors []entity.Author) []dto.SubscriptionDto {
 
 	for _, author := range authors {
 		subscriptions = append(subscriptions, dto.SubscriptionDto{
-			ID:       author.ID,
+			ID:       author.ID.Hex(),
 			Username: author.Username,
 			ImgLink:  author.ImgLink,
 		})

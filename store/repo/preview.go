@@ -2,10 +2,8 @@ package repo
 
 import (
 	"context"
-
 	"dev/bluebasooo/video-platform/db"
 	"dev/bluebasooo/video-platform/repo/entity"
-
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -34,6 +32,7 @@ func (r *PreviewRepository) CreateVideoPreview(videoPreview *entity.VideoPreview
 	collection := r.db.GetCollection("video_previews")
 
 	_, err := collection.InsertOne(context.TODO(), videoPreview)
+
 	return err
 }
 

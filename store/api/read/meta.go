@@ -23,5 +23,5 @@ func ReadFileMeta(w http.ResponseWriter, r *http.Request) {
 
 func InitFileMetaApi(router *mux.Router) {
 	fileApi := router.PathPrefix("/meta").Subrouter()
-	fileApi.HandleFunc("/{id}/meta", ReadFileMeta).Methods("GET")
+	fileApi.HandleFunc("/{id}", ReadFileMeta).Methods("GET")
 }

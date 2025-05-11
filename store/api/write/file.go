@@ -5,7 +5,9 @@ import (
 	"dev/bluebasooo/video-platform/service"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
@@ -13,22 +15,59 @@ import (
 func WriteFile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	taskID := vars["taskId"]
-	hash := vars["hash"]
-	username := vars["username"]
+	userId := r.Header.Get("user_id")
 
-	bytes, err := io.ReadAll(r.Body)
-	if err != nil { // TODO: handle error
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return // no handle bytes
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		log.Println(err)
 	}
 
-	err = service.Write(taskID, hash, bytes, username)
-	if err != nil { // TODO: handle error
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return // no handle bytes
+	var wg sync.WaitGroup
+	resultChanel := make(chan *channelResult, len(r.MultipartForm.File))
+
+	for key, value := range r.MultipartForm.File {
+		for _, fileHeader := range value {
+
+			file, _ := fileHeader.Open()
+			defer file.Close()
+			bytes, _ := io.ReadAll(file)
+
+			wg.Add(1)
+			go func(id string, wg *sync.WaitGroup, resultChan chan<- *channelResult) {
+				defer wg.Done()
+				err := service.Write(taskID, id, bytes, userId)
+				resultChan <- &channelResult{
+					id:  id,
+					err: err,
+				}
+
+			}(key, &wg, resultChanel)
+		}
 	}
+
+	wg.Wait()
+	close(resultChanel)
+
+	failed := make([]dto.WriteResultDto, 0)
+	for result := range resultChanel {
+		if result.err != nil {
+			failed = append(failed, dto.WriteResultDto{
+				ID:    result.id,
+				Error: result.err.Error(),
+			})
+		}
+	}
+
+	json.NewEncoder(w).Encode(&dto.WritePartsResultDto{
+		Results: failed,
+	})
 
 	w.WriteHeader(http.StatusOK)
+}
+
+type channelResult struct {
+	id  string
+	err error
 }
 
 func GeneratePlan(w http.ResponseWriter, r *http.Request) {
@@ -48,8 +87,8 @@ func GeneratePlan(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(plan)
 }
 
-func InitFileWriteApi(router *mux.Router) {
+func InitWriteFileApi(router *mux.Router) {
 	fileAPI := router.PathPrefix("/file").Subrouter()
-	fileAPI.HandleFunc("/write/{taskId}/{hash}", WriteFile).Methods("POST")
 	fileAPI.HandleFunc("/write/plan", GeneratePlan).Methods("POST")
+	fileAPI.HandleFunc("/write/{taskId}", WriteFile).Methods("POST")
 }

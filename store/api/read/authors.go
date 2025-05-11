@@ -10,7 +10,7 @@ import (
 
 func GetAuthor(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
+	id := vars["authorId"]
 
 	author, err := service.GetAuthor(id)
 	if err != nil {
@@ -19,4 +19,9 @@ func GetAuthor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(author)
+}
+
+func InitReadAuthorApi(router *mux.Router) {
+	subRouter := router.PathPrefix("/authors").Subrouter()
+	subRouter.HandleFunc("/{authorId}", GetAuthor).Methods("GET")
 }

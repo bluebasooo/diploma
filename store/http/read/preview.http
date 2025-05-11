@@ -1,0 +1,6 @@
+GET http://localhost:8080/preview/681f98fc07ea0ea1385f3866
+Accept: application/json
+
+###
+GET http://localhost:8080/preview/main-page/user123
+Accept: application/json

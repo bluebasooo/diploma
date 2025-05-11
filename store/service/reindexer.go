@@ -1,54 +1,62 @@
 package service
 
 import (
+	"bytes"
+	"context"
 	"dev/bluebasooo/video-platform/search"
+	"encoding/json"
+	"fmt"
+	"github.com/elastic/go-elasticsearch/v8/esutil"
+	"log"
+	"time"
 )
 
-var limit = 1000
-var queue = NewQueue[search.Instruction]()
+var bulkIndexer esutil.BulkIndexer
 
-type opType int
+type opType string
 
 const (
-	Index opType = iota
-	Create
-	Update
-	Delete
+	Index  opType = "index"
+	Create        = "create"
+	Update        = "update"
+	Delete        = "delete"
 )
 
-func Shedule(opType opType, indexName string, id string, body search.Body) {
-	instruction := search.Instruction{
-		Meta: *resolveMeta(opType, indexName, id),
-		Body: body,
-	}
-	queue.Push(instruction)
+func InitReindexer(es *search.ElasticDB) esutil.BulkIndexer {
+	bi, _ := esutil.NewBulkIndexer(esutil.BulkIndexerConfig{
+		Client:        es.GetClient(),
+		NumWorkers:    25,
+		FlushInterval: 1 * time.Second,
+	})
 
-	go Execute()
+	bulkIndexer = bi
+
+	return bi
 }
 
-func Execute() error {
-	if queue.Size() < limit {
-		return nil
+func Schedule[T any](opType opType, indexName string, id string, bodies []T) {
+	items := make([]esutil.BulkIndexerItem, 0, len(bodies))
+
+	for _, body := range bodies {
+		items = append(items, *buildBulkItem(opType, indexName, id, body))
 	}
 
-	instructions, err := queue.BatchPop(limit)
-	if err != nil {
-		return err
+	for _, item := range items {
+		err := bulkIndexer.Add(context.Background(), item)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
-	return searchRepo.BulkIndexEntities(instructions)
+	fmt.Print("hello")
 }
 
-func resolveMeta(opType opType, indexName string, id string) *search.Meta {
-	switch opType {
-	case Index:
-		return &search.Meta{Index: &search.IndexPreamble{Index: indexName, ID: id}}
-	case Create:
-		return &search.Meta{Create: &search.IndexPreamble{Index: indexName, ID: id}}
-	case Update:
-		return &search.Meta{Update: &search.DocIndexPreamble{Doc: search.IndexPreamble{Index: indexName, ID: id}}}
-	case Delete:
-		return &search.Meta{Delete: &search.IndexPreamble{Index: indexName, ID: id}}
+func buildBulkItem(oper opType, indexName string, id string, body any) *esutil.BulkIndexerItem {
+	data, _ := json.Marshal(body)
+	return &esutil.BulkIndexerItem{
+		Index:      indexName,
+		Action:     string(oper),
+		DocumentID: id,
+		Body:       bytes.NewReader(data),
 	}
-	return nil
 }

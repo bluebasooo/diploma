@@ -1,0 +1,18 @@
+POST http://localhost:8080/comments/
+Content-Type: application/json
+
+{
+  "id": "comment1",
+  "videoId": "video123",
+  "message": "Great video!",
+  "likes": 0,
+  "dislikes": 0,
+  "author": {
+    "id": "user123",
+    "username": "test_user"
+  },
+  "childs": [],
+  "parentId": "",
+  "rootId": "comment1",
+  "updatedAt": "2024-03-21T12:00:00Z"
+}

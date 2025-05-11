@@ -3,13 +3,10 @@ package service
 import (
 	"context"
 	"dev/bluebasooo/video-platform/api/dto"
-	"dev/bluebasooo/video-platform/repo"
 	"dev/bluebasooo/video-platform/repo/entity"
 	"dev/bluebasooo/video-platform/service/mapper"
 	"dev/bluebasooo/video-platform/utils"
 )
-
-var commRepo *repo.CommentRepo
 
 func GetComments(ctx context.Context, videoId string, pageNum int, pageSize int) ([]dto.CommentDto, error) {
 	roots, err := commRepo.GetCommentsPage(ctx, videoId, pageNum, pageSize)

@@ -1,0 +1,11 @@
+### GET request to example server
+POST http://localhost:8080/preview/681fd5c39725629cd0b4e797
+Content-Type: application/json
+user_id: 681f98e307ea0ea1385f3865
+
+
+{
+  "name": "test_video",
+  "description": "test video description",
+  "durationMs": 205
+}

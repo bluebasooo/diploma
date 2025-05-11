@@ -18,23 +18,15 @@ type AuthorShortPreview struct {
 
 // TODO проработать - сейчас все что ниже накид на страницу самого видео
 type VideoPreview struct {
-	ID            string        `bson:"_id"`
-	Name          string        `bson:"name"`
-	Img           string        `bson:"img"`
-	Description   string        `bson:"description"`
-	AuthorPreview AuthorPreview `bson:"author"`
-	VideoStats    VideoStats    `bson:"stats"`
-	CreatedAt     time.Time     `bson:"createdAt"`
-	UpdatedAt     time.Time     `bson:"updatedAt"`
-	DurationMs    int64         `bson:"durationMs"`
-	CommentTreeId string        `bson:"commentTreeId"`
-}
-
-type AuthorPreview struct {
-	ID      string `bson:"_id"`
-	Name    string `bson:"name"`
-	Img     string `bson:"img"`
-	SubsNum int64  `bson:"subsNum"`
+	ID          string     `bson:"_id"`
+	Name        string     `bson:"name"`
+	Img         string     `bson:"img"`
+	Description string     `bson:"description"`
+	AuthorId    string     `bson:"authorId"`
+	VideoStats  VideoStats `bson:"stats"`
+	CreatedAt   time.Time  `bson:"createdAt"`
+	UpdatedAt   time.Time  `bson:"updatedAt"`
+	DurationMs  int64      `bson:"durationMs"`
 }
 
 type VideoStats struct {

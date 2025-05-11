@@ -1,0 +1,3 @@
+GET http://localhost:8080/file/681fab5ec8beb9e71faeff14/681fab5ec8beb9e71faeff15
+Accept: multipart/form-data
+user_id: 681f98e307ea0ea1385f3865

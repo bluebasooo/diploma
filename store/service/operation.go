@@ -1,8 +1,7 @@
 package service
 
 import (
-	"crypto/rand"
-	"encoding/hex"
+	"dev/bluebasooo/video-platform/utils"
 	"sync"
 )
 
@@ -17,14 +16,14 @@ const (
 
 var (
 	cacheTasks = TaskCache{
-		tasks: make(map[string]Task),
+		tasks: make(map[string]*Task),
 		mu:    sync.Mutex{},
 	}
 )
 
 type Task struct {
 	ID  string
-	Ops map[string]Operation
+	Ops map[string]*Operation
 }
 
 type Operation struct {
@@ -33,32 +32,29 @@ type Operation struct {
 }
 
 type TaskCache struct { // better to use redis
-	tasks map[string]Task
+	tasks map[string]*Task
 	mu    sync.Mutex
 }
 
-func (cache *TaskCache) enqueue(hash string, opsSz int64) ([]string, error) {
+func (cache *TaskCache) enqueue(taskId string, opsSz int64) ([]string, error) {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 
 	task := Task{
-		ID:  hash,
-		Ops: make(map[string]Operation),
+		ID:  taskId,
+		Ops: make(map[string]*Operation),
 	}
 
 	result := make([]string, 0, opsSz)
 	for i := int64(0); i < opsSz; i++ {
-		hash, err := GenerateRandom64CharHash()
-		if err != nil {
-			return nil, err
-		}
+		hash := utils.GetRandomHashId()
 		result = append(result, hash)
-		task.Ops[hash] = Operation{
+		task.Ops[hash] = &Operation{
 			Hash:   hash,
 			Status: NonStarted,
 		}
 	}
-	cache.tasks[hash] = task
+	cache.tasks[taskId] = &task
 
 	return result, nil
 }
@@ -125,19 +121,6 @@ func (cache *TaskCache) checkOfDone(taskID string) bool {
 	}
 
 	return true
-}
-
-func GenerateRandom64CharHash() (string, error) {
-	// Создаем байтовый массив длиной 32 (так как каждый байт превратится в 2 hex символа)
-	bytes := make([]byte, 32)
-
-	// Заполняем массив криптографически стойкими случайными числами
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-
-	// Конвертируем байты в 64-символьную hex строку
-	return hex.EncodeToString(bytes), nil
 }
 
 func (cache *TaskCache) err(taskID string, hash string) {

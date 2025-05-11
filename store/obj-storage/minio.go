@@ -21,12 +21,15 @@ func NewObjectStorage(config *config.MinioConfig) *ObjectStorage {
 		Creds:  credentials.NewStaticV4(config.AccessKey, config.SecretKey, ""),
 		Secure: false,
 	}
-	minioClient, err := minio.New(config.URI, opts)
+	minioClient, err := minio.New(config.Uri(), opts)
 	if err != nil {
 		log.Fatalf("Failed to create minio client: %v", err)
 	}
 
-	upsertBucket(minioClient, config.BucketName)
+	err = upsertBucket(minioClient, config.BucketName)
+	if err != nil {
+		log.Fatalf("Failed to create bucket: %v", err)
+	}
 
 	return &ObjectStorage{minioClient: minioClient, config: config}
 }

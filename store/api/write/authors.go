@@ -26,7 +26,7 @@ func CreateAuthor(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func InitAuthorsApi(router *mux.Router) {
+func InitWriteAuthorsApi(router *mux.Router) {
 	authorsAPI := router.PathPrefix("/authors").Subrouter()
 	authorsAPI.HandleFunc("/create", CreateAuthor).Methods("POST")
 }

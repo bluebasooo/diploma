@@ -1,0 +1,20 @@
+###
+POST http://localhost:8080/file/write/681fab5ec8beb9e71faeff14
+user_id: 681f98e307ea0ea1385f3865
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="681fab5ec8beb9e71faeff15"; filename="rand";
+
+// The 'input.txt' file will be uploaded
+< ../testdata/random_bytes
+
+
+
+###
+POST http://localhost:8080/file/write/plan
+Content-Type: application/json
+
+{
+  "sizeInBytes": 1024
+}

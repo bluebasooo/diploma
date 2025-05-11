@@ -36,6 +36,6 @@ func GetMainPageVideoPreviews(w http.ResponseWriter, r *http.Request) {
 
 func InitPreviewApi(router *mux.Router) {
 	fileApi := router.PathPrefix("/preview").Subrouter()
-	fileApi.HandleFunc("/{id}/preview", VideoPreview).Methods("GET")
+	fileApi.HandleFunc("/{id}", VideoPreview).Methods("GET")
 	fileApi.HandleFunc("/main-page/{userID}", GetMainPageVideoPreviews).Methods("GET")
 }

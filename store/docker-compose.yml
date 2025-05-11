@@ -23,6 +23,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${DB_MONGO_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_MONGO_PASSWORD}
       MONGO_INITDB_DATABASE: ${DB_MONGO_DATABASE_NAME}
+    env_file:
+      - .env
     ports:
       - "27017:27017"
     volumes:
@@ -38,13 +40,33 @@ services:
      - "9001:9001"
    environment:
      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD} 
+     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+   env_file:
+     - .env
    volumes:
      - minio-storage:/data
+   networks:
+      - app-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false # Отключаем аутентификацию для разработки
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - app-network
 
 volumes:
   mongodb-data:
   minio-storage:
+  es_data:
 
 networks:
   app-network:

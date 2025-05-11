@@ -27,7 +27,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func InitCommentsWriteApi(router *mux.Router) {
+func InitWriteCommentsApi(router *mux.Router) {
 	subRouter := router.PathPrefix("/comments").Subrouter()
 	subRouter.HandleFunc("/", CreateComment).Methods("POST")
 }

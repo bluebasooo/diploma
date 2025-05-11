@@ -1,0 +1,2 @@
+GET http://localhost:8080/authors/681e99376974c84aab43eba7
+Accept: application/json

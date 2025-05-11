@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"dev/bluebasooo/video-platform/config"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -39,7 +40,8 @@ func connectToMongoDB(config *config.MongoConfig) (*mongo.Client, error) {
 		Username:   config.User,
 		Password:   config.Password,
 	})
-	opts.ApplyURI(config.URI)
+	uri := fmt.Sprintf("mongodb://%s", config.Uri())
+	opts.ApplyURI(uri)
 
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
@@ -74,6 +76,7 @@ func (db *MongoDB) isCollectionSupported(name string) bool {
 }
 
 func (db *MongoDB) initAllCollections(collectionNames []string) {
+	db.collections = make(map[string]*mongo.Collection)
 	for _, collectionName := range collectionNames {
 		db.collections[collectionName] = db.db.Collection(collectionName)
 	}

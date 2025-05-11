@@ -5,20 +5,28 @@ import "os"
 func GetApplicationConfig() *ApplicationConfig {
 	return &ApplicationConfig{
 		MongoConfig: MongoConfig{ // TODO right env names
-			URI:              os.Getenv("MONGO_URI"),
-			User:             os.Getenv("MONGO_USER"),
-			Password:         os.Getenv("MONGO_PASSWORD"),
-			DatabaseName:     os.Getenv("MONGO_DATABASE"),
-			CollectionsNames: []string{},
+			Host:         os.Getenv("DB_MONGO_HOST"),
+			Port:         os.Getenv("DB_MONGO_PORT"),
+			User:         os.Getenv("DB_MONGO_USER"),
+			Password:     os.Getenv("DB_MONGO_PASSWORD"),
+			DatabaseName: os.Getenv("DB_MONGO_DATABASE_NAME"),
+			CollectionsNames: []string{
+				"authors",
+				"comments",
+				"file_meta",
+				"video_previews",
+			},
 		},
 		MinioConfig: MinioConfig{
-			URI:        os.Getenv("MINIO_URI"),
-			AccessKey:  os.Getenv("MINIO_ACCESS_KEY"),
-			SecretKey:  os.Getenv("MINIO_SECRET_KEY"),
+			Host:       os.Getenv("MINIO_HOST"),
+			Port:       os.Getenv("MINIO_PORT"),
+			AccessKey:  os.Getenv("MINIO_ROOT_USER"),
+			SecretKey:  os.Getenv("MINIO_ROOT_PASSWORD"),
 			BucketName: os.Getenv("MINIO_BUCKET_NAME"),
 		},
 		ElasticConfig: ElasticConfig{
-			URI: os.Getenv("ELASTIC_URI"),
+			Host: os.Getenv("ELASTIC_HOST"),
+			Port: os.Getenv("ELASTIC_PORT"),
 		},
 	}
 }
@@ -30,22 +38,41 @@ type ApplicationConfig struct {
 }
 
 type MongoConfig struct {
-	URI              string
+	Host             string
+	Port             string
 	User             string
 	Password         string
 	DatabaseName     string
 	CollectionsNames []string
 }
 
+func (mongo *MongoConfig) Uri() string {
+	return mongo.Host + ":" + mongo.Port
+}
+
 type MinioConfig struct {
-	URI        string
+	Host       string
+	Port       string
 	AccessKey  string
 	SecretKey  string
 	BucketName string
 }
 
+func (minio *MinioConfig) Uri() string {
+	return minio.Host + ":" + minio.Port
+}
+
 type ElasticConfig struct {
-	URI      string
+	Host     string
+	Port     string
 	Username string
 	Password string
+}
+
+func (elastic *ElasticConfig) Uri() string {
+	return elastic.Host + ":" + elastic.Port
+}
+
+type ExternalResource interface {
+	Uri() string
 }

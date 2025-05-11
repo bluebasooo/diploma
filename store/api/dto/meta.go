@@ -1,15 +1,13 @@
 package dto
 
 type FileMetaPlanDto struct {
-	TaskID      string `json:"taskId"`
-	SizeInBytes int64  `json:"sizeInBytes"`
+	SizeInBytes int64 `json:"sizeInBytes"`
 }
 
 type FileMetaDto struct {
-	ID           string            `json:"id"`
-	Parts        []FileMetaPartDto `json:"parts"`
-	FullSz       int64             `json:"fullSz"`
-	PartSequence []string          `json:"partSequence"`
+	ID     string            `json:"id"`
+	Parts  []FileMetaPartDto `json:"parts"`
+	FullSz int64             `json:"fullSz"`
 }
 
 type FileMetaPartDto struct {

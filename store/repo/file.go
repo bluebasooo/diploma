@@ -11,8 +11,8 @@ type FileRepository struct {
 	bucketName    string
 }
 
-func NewFileRepository(objectStorage obj_storage.ObjectStorage) *FileRepository {
-	return &FileRepository{objectStorage: objectStorage}
+func NewFileRepository(objectStorage obj_storage.ObjectStorage, bucketName string) *FileRepository {
+	return &FileRepository{objectStorage: objectStorage, bucketName: bucketName}
 }
 
 func (r *FileRepository) UploadFilePart(file *entity.FilePart) error {

@@ -1,13 +1,15 @@
 package entity
 
+import "time"
+
 type VideoIndex struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	DurationMs  int    `json:"durationMs"`
-	AuthorName  string `json:"authorName"`
-	UploadDate  string `json:"uploadDate"`
-	Views       int    `json:"views"`
-	Hidden      bool   `json:"hidden"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	DurationMs  int       `json:"durationMs"`
+	AuthorName  string    `json:"authorName"`
+	UploadDate  time.Time `json:"uploadDate"`
+	Views       int       `json:"views"`
+	Hidden      bool      `json:"hidden"`
 }
 
 type AuthorIndex struct {
@@ -16,17 +18,16 @@ type AuthorIndex struct {
 }
 
 type VideoSearchResult struct {
-	VideoIndex
 	Searchable
+	VideoIndex
 }
 
 type AuthorSearchResult struct {
-	AuthorIndex
 	Searchable
+	AuthorIndex
 }
 
 type Searchable struct {
 	ID    string  `json:"_id"`
 	Score float64 `json:"_score"`
-	Index string  `json:"_index"`
 }
