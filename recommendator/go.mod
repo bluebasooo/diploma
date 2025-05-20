@@ -2,11 +2,14 @@ module dev/bluebasooo/video-recomendator
 
 go 1.24.1
 
-require github.com/gorilla/mux v1.8.1
+require (
+	github.com/ClickHouse/clickhouse-go/v2 v2.34.0
+	github.com/gorilla/mux v1.8.1
+	github.com/segmentio/kafka-go v0.4.48
+)
 
 require (
 	github.com/ClickHouse/ch-go v0.65.1 // indirect
-	github.com/ClickHouse/clickhouse-go/v2 v2.34.0 // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.7.1 // indirect

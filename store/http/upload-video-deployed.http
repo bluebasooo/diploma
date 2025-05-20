@@ -1,0 +1,58 @@
+### Create Author
+### Придет id автора
+POST http://51.250.104.121:8080/authors/create
+Content-Type: application/json
+
+{
+  "username": "test_author"
+}
+
+### Generate Plan
+### Придет id видео + создастя метаинформация о видео
+### а также придет план - где будут partId и какой диапозон байт надо загрузить
+POST http://51.250.104.121:8080/file/write/plan
+Content-Type: application/json
+
+{
+  "sizeInBytes": 1024
+}
+
+### Upload Preview
+### По id видео можео загрузить
+POST http://51.250.104.121:8080/preview/{id}
+Content-Type: application/json
+user_id: {authorId}
+
+
+{
+  "name": "test_video",
+  "description": "test video description",
+  "durationMs": 205
+}
+
+### Upload VideoParts
+### Берем fileId и partId из плана и грузим диапозон байтов
+POST http://51.250.104.121:8080/file/write/{fileId}/{partId}
+user_id: {authorId}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="{partId}"; filename="rand";
+
+// The 'input.txt' file will be uploaded - это просто массив байт
+< ../testdata/random_bytes
+
+### Read meta
+### Можно получить мету о видео - чтобы начать его грузить
+GET http://51.250.104.121:8080/meta/{fileId}
+Accept: application/json
+
+### Read preview
+### Можно получить превью чтобы отобразить на страничке видео
+GET http://51.250.104.121:8080/preview/{fileId}
+Accept: application/json
+
+### Read video
+### Можно получить кусок видео - обычно прийдет тот что просили + кусок до и после
+GET http://51.250.104.121:8080/file/{fileId}/{partId}
+Accept: multipart/form-data

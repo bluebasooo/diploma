@@ -10,9 +10,7 @@ type ClickhouseDB struct {
 	db clickhouse.Conn
 }
 
-func NewClickhouseDB() *ClickhouseDB {
-	config := config.GetApplicationConfig()
-
+func NewClickhouseDB(config config.ApplicationConfig) *ClickhouseDB {
 	opts := clickhouse.Options{
 		Addr: []string{config.ClickhouseConfig.URI},
 		Auth: clickhouse.Auth{

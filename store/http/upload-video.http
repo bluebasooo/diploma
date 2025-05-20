@@ -1,4 +1,5 @@
 ### Create Author
+### Придет id автора
 POST http://localhost:8080/authors/create
 Content-Type: application/json
 
@@ -7,6 +8,7 @@ Content-Type: application/json
 }
 
 ### Generate Plan
+### Придет id видео + создастя метаинформация о видео
 POST http://localhost:8080/file/write/plan
 Content-Type: application/json
 
@@ -15,7 +17,8 @@ Content-Type: application/json
 }
 
 ### Upload Preview
-POST http://localhost:8080/preview/{{id}}
+### По id видео можео загрузить
+POST http://localhost:8080/preview/{id}
 Content-Type: application/json
 user_id: 681f98e307ea0ea1385f3865
 

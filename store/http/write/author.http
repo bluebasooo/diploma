@@ -4,3 +4,11 @@ Content-Type: application/json
 {
   "username": "test_author"
 }
+
+###
+POST http://51.250.104.121:8080/authors/create
+Content-Type: application/json
+
+{
+"username": "test_author"
+}
