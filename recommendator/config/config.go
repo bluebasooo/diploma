@@ -1,6 +1,10 @@
 package config
 
-import "os"
+import (
+	"os"
+
+	"dev/bluebasooo/video-common/config"
+)
 
 func GetApplicationConfig() *ApplicationConfig {
 	return &ApplicationConfig{
@@ -17,23 +21,25 @@ func GetApplicationConfig() *ApplicationConfig {
 		},
 		KafkaReaderConfig: KafkaReaderConfig{
 			BrokerHost: os.Getenv("KAFKA_BROKER_URL"),
+			BrokerPort: os.Getenv("KAFKA_BROKER_PORT"),
 			Topic:      os.Getenv("KAFKA_TOPIC"),
-
-		}
+			GroupID:    os.Getenv("KAFKA_GROUP_ID"),
+		},
 	}
 }
 
 type ApplicationConfig struct {
-	ClickhouseConfig ClickhouseConfig
+	ClickhouseConfig  ClickhouseConfig
 	KafkaReaderConfig KafkaReaderConfig
 	KafkaWriterConfig KafkaWriterConfig
+	MongoConfig       config.MongoConfig
 }
 
 type KafkaReaderConfig struct {
 	BrokerHost string
 	BrokerPort string
 	Topic      string
-	GroupId    string
+	GroupID    string
 }
 
 type KafkaWriterConfig struct {

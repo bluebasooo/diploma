@@ -55,6 +55,28 @@ func (r *HistoryRepo) GetHistoryByUserId(ctx context.Context, userId string) ([]
 	return histories, nil
 }
 
+func (r *HistoryRepo) GetHistoryAfterID(ctx context.Context, id int64) ([]entity.History, error) {
+	selector := "id, user_id, video_id, created_at"
+	where := fmt.Sprintf("AND id > %d", id)
+
+	rows, err := r.db.Db().Query(ctx, getHistory, selector, where)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var histories []entity.History
+	for rows.Next() {
+		var history entity.History
+		err = rows.Scan(&history)
+		if err != nil {
+			return nil, err
+		}
+		histories = append(histories, history)
+	}
+	return histories, nil
+}
+
 func (r *HistoryRepo) BatchInsertHistory(ctx context.Context, histories []entity.History) error {
 	plainColumns := "user_id, video_id, created_at"
 	values := make([]string, 0, len(histories))
