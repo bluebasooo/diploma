@@ -5,6 +5,7 @@ import (
 	mongo "dev/bluebasooo/video-common/db"
 	"dev/bluebasooo/video-recomendator/db"
 	"dev/bluebasooo/video-recomendator/queue"
+	"dev/bluebasooo/video-recomendator/repo"
 )
 
 type GrandMinion struct {
@@ -21,7 +22,8 @@ type MiniMinion struct {
 func NewGrandMinion(kafkaProducer *queue.KafkaProducer, ch *db.ClickhouseDB) *GrandMinion {
 	return &GrandMinion{
 		kafkaProducer: kafkaProducer,
-		ch:            ch,
+		indexRepo:      repo.NewIndexRepo(ch),
+		historyRepo:    repo.NewHistoryRepo(ch),
 	}
 }
 
@@ -33,7 +35,12 @@ func NewMiniMinion(kafkaConsumer *queue.KafkaConsumer, mongo *mongo.MongoDB) *Mi
 }
 
 func (g *GrandMinion) PlanUpdate(ctx context.Context) error {
-	g.ch.Db().Query(ctx context.Context, query string, args ...any)
+	updates, err := g.Pull(ctx)
+	if err != nil {
+		return err
+	}
+
+
 }
 
 func (g *MiniMinion) ExecuteUpdate(ctx context.Context) error {

@@ -55,11 +55,14 @@ func (r *HistoryRepo) GetHistoryByUserId(ctx context.Context, userId string) ([]
 	return histories, nil
 }
 
-func (r *HistoryRepo) GetHistoryAfterID(ctx context.Context, id int64) ([]entity.History, error) {
+func (r *HistoryRepo) GetHistoryAfterID(ctx context.Context, id int64, limit int64) ([]entity.History, error) {
 	selector := "id, user_id, video_id, created_at"
 	where := fmt.Sprintf("AND id > %d", id)
+	baseQuery := fmt.Sprintf(getHistory, selector, where)
+	limitQuery := fmt.Sprintf("\nLIMIT %d", limit)
+	fullQuery := fmt.Sprintf("%s%s", baseQuery, limitQuery)
 
-	rows, err := r.db.Db().Query(ctx, getHistory, selector, where)
+	rows, err := r.db.Db().Query(ctx, fullQuery)
 	if err != nil {
 		return nil, err
 	}
