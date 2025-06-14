@@ -17,35 +17,42 @@ func NewHistoryRepo(db *db.ClickhouseDB) *HistoryRepo {
 }
 
 const (
-	getHistory = `
-	SELECT %s 
+	getHistoryByUserIds = `
+	SELECT user_id, video_id, sum(value) as metric 
 	FROM history
-	WHERE 1 = 1
-	%s
-	ORDER BY created_at DESC
+	WHERE user_id IN (%s) 
+		AND created_at >= now() - INTERVAL 30 DAY
+	GROUP BY user_id, video_id
+	`
+
+	getHistoryAbout30Days = `
+	SELECT user_id, created_at, video_id
+	FROM history
+	WHERE user_id = %s
+		AND created_at >= now() - INTERVAL 30 DAY
 	`
 
 	insertHistory = `
-	INSERT INTO history(%s)
-	VALUES (
+	INSERT INTO history(user_id, video_id, created_at) VALUES 
 	%s
-	)
 	`
 )
 
-func (r *HistoryRepo) GetHistoryByUserId(ctx context.Context, userId string) ([]entity.History, error) {
-	selector := "id, user_id, video_id, created_at"
-	where := fmt.Sprintf("AND user_id = '%s' AND created_at >= now() - INTERVAL 30 DAY", userId)
+// Алгоритм
+// 1. Получаем историю из метрик
+// 2. Insert в историю
+// 3. Для метрик по user пересчитываем историю
 
-	rows, err := r.db.Db().Query(ctx, getHistory, selector, where)
+func (r *HistoryRepo) GetHistoryByUserIds(ctx context.Context, userIds []string) ([]entity.UserHistory, error) {
+	rows, err := r.db.Db().Query(ctx, getHistoryByUserIds, userIds)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var histories []entity.History
+	var histories []entity.UserHistory
 	for rows.Next() {
-		var history entity.History
+		var history entity.UserHistory
 		err = rows.Scan(&history)
 		if err != nil {
 			return nil, err
@@ -55,22 +62,16 @@ func (r *HistoryRepo) GetHistoryByUserId(ctx context.Context, userId string) ([]
 	return histories, nil
 }
 
-func (r *HistoryRepo) GetHistoryAfterID(ctx context.Context, id int64, limit int64) ([]entity.History, error) {
-	selector := "id, user_id, video_id, created_at"
-	where := fmt.Sprintf("AND id > %d", id)
-	baseQuery := fmt.Sprintf(getHistory, selector, where)
-	limitQuery := fmt.Sprintf("\nLIMIT %d", limit)
-	fullQuery := fmt.Sprintf("%s%s", baseQuery, limitQuery)
-
-	rows, err := r.db.Db().Query(ctx, fullQuery)
+func (r *HistoryRepo) GetHistoryAbout30Days(ctx context.Context, userId string) ([]entity.ShortUserHistory, error) {
+	rows, err := r.db.Db().Query(ctx, getHistoryAbout30Days, userId)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var histories []entity.History
+	var histories []entity.ShortUserHistory
 	for rows.Next() {
-		var history entity.History
+		var history entity.ShortUserHistory
 		err = rows.Scan(&history)
 		if err != nil {
 			return nil, err
@@ -81,12 +82,11 @@ func (r *HistoryRepo) GetHistoryAfterID(ctx context.Context, id int64, limit int
 }
 
 func (r *HistoryRepo) BatchInsertHistory(ctx context.Context, histories []entity.History) error {
-	plainColumns := "user_id, video_id, created_at"
 	values := make([]string, 0, len(histories))
 	for _, history := range histories {
 		values = append(values, fmt.Sprintf("'%s', '%s', '%s'", history.UserID, history.VideoID, history.CreatedAt))
 	}
 	valuesStr := strings.Join(values, ",\n")
 
-	return r.db.Db().AsyncInsert(ctx, insertHistory, false, plainColumns, valuesStr)
+	return r.db.Db().AsyncInsert(ctx, insertHistory, false, valuesStr)
 }

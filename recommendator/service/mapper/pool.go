@@ -2,13 +2,13 @@ package mapper
 
 import (
 	"dev/bluebasooo/video-recomendator/api/dto"
-	"dev/bluebasooo/video-recomendator/engine"
 )
 
-func ToPoolDto(pool *engine.Pool, start int, end int) *dto.PoolDto {
-	pairs := engine.RangedKeysPairs(pool.RangedVideoIDs, start, end)
+func ToPoolDto(videoIds []string, page int, sz int) *dto.PoolDto {
+	from := (page - 1) * sz
+	to := page * sz
 
 	return &dto.PoolDto{
-		VideoIds: pairs,
+		VideoIds: videoIds[from:to],
 	}
 }

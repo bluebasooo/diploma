@@ -25,7 +25,10 @@ func GetPoolVideos(w http.ResponseWriter, r *http.Request) {
 		pageSizeInt = 10
 	}
 
-	pool := service.GetPagedVideoPool(poolId, pageInt, pageSizeInt)
+	pool, err := service.GetPagedVideoPool(poolId, pageInt, pageSizeInt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
 	json.NewEncoder(w).Encode(pool)
 }

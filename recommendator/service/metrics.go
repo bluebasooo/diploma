@@ -4,12 +4,7 @@ import (
 	"context"
 	"dev/bluebasooo/video-recomendator/api/dto"
 	"dev/bluebasooo/video-recomendator/entity"
-	"dev/bluebasooo/video-recomendator/repo"
 	"dev/bluebasooo/video-recomendator/service/mapper"
-)
-
-var (
-	metricsRepo *repo.MetricsRepo
 )
 
 func WriteMetrics(ctx context.Context, metrics []dto.MetricDto) error {
@@ -17,5 +12,12 @@ func WriteMetrics(ctx context.Context, metrics []dto.MetricDto) error {
 	for _, metric := range metrics {
 		metricEntities = append(metricEntities, *mapper.ToMetric(&metric))
 	}
-	return metricsRepo.BatchInsertMetrics(ctx, metricEntities)
+	err := metricsRepo.BatchInsertMetrics(ctx, metricEntities)
+	if err != nil {
+		return err
+	}
+
+	updatesHandler.Increment(len(metrics))
+
+	return nil
 }

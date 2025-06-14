@@ -25,6 +25,7 @@ func GetApplicationConfig() *ApplicationConfig {
 			Topic:      os.Getenv("KAFKA_TOPIC"),
 			GroupID:    os.Getenv("KAFKA_GROUP_ID"),
 		},
+		Debug: true,
 	}
 }
 
@@ -33,6 +34,7 @@ type ApplicationConfig struct {
 	KafkaReaderConfig KafkaReaderConfig
 	KafkaWriterConfig KafkaWriterConfig
 	MongoConfig       config.MongoConfig
+	Debug             bool
 }
 
 type KafkaReaderConfig struct {

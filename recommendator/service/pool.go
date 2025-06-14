@@ -1,16 +1,26 @@
 package service
 
 import (
+	"context"
 	"dev/bluebasooo/video-recomendator/api/dto"
-	"dev/bluebasooo/video-recomendator/engine"
 	"dev/bluebasooo/video-recomendator/service/mapper"
+	"maps"
 )
 
-func GetPagedVideoPool(id string, page int, pageSize int) *dto.PoolDto {
-	pool := engine.GetPool(id)
+func GetPagedVideoPool(id string, page int, pageSize int) (*dto.PoolDto, error) {
+	dot, err := dotsRepo.GetDot(context.Background(), id)
+	if err != nil {
+		return nil, err
+	}
+	bucket, err := bucketRepo.GetBucket(context.Background(), dot.BucketID)
+	if err != nil {
+		return nil, err
+	}
 
-	from := (page - 1) * pageSize
-	to := page * pageSize
+	center := maps.Clone(bucket.BucketCenter)
+	videoIds := sortedByValueKeys(center, func(first float64, second float64) bool {
+		return first > second
+	})
 
-	return mapper.ToPoolDto(pool, from, to)
+	return mapper.ToPoolDto(videoIds, page, pageSize), nil
 }
