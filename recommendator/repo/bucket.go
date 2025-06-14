@@ -72,7 +72,9 @@ func (r *BucketRepo) copyCache() map[string]entity.Bucket {
 
 func NewBucketRepo(db *db.MongoDB) *BucketRepo {
 	return &BucketRepo{
-		db: db,
+		db:          db,
+		bucketCache: make(map[string]entity.Bucket),
+		mu:          sync.RWMutex{},
 	}
 }
 

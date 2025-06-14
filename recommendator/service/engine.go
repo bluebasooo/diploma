@@ -13,10 +13,10 @@ import (
 )
 
 var (
-	historyRepo         *repo.HistoryRepo
-	metricsRepo         *repo.MetricsRepo
-	dotsRepo            *repo.DotsRepo
-	bucketRepo          *repo.BucketRepo
+	HistoryRepo         *repo.HistoryRepo
+	MetricsRepo         *repo.MetricsRepo
+	DotsRepo            *repo.DotsRepo
+	BucketRepo          *repo.BucketRepo
 	historyUpdateBroker = broker.NewDummyBroker(func(payload *HistoryUpdatesPayload) error {
 		return HistoryUpdates(context.Background(), payload.ViewIdentifiers)
 	})
@@ -26,7 +26,7 @@ var (
 	separateBucketBroker = broker.NewDummyBroker(func(payload *SeparateBucketPayload) error {
 		return SeparateBuckets(payload.bucketIds)
 	})
-	updatesHandler *handler.UpdateHandler
+	UpdatesHandler *handler.UpdateHandler
 )
 
 // Алгоритм
@@ -39,7 +39,7 @@ func Loop() {
 	errs := make(chan error)
 	for {
 		select {
-		case <-updatesHandler.Producer:
+		case <-UpdatesHandler.Producer:
 			err := ProcessMetrics(context.Background())
 			if err != nil {
 				errs <- err
@@ -52,7 +52,7 @@ func Loop() {
 
 func ProcessMetrics(ctx context.Context) error {
 	// 1.
-	viewIdentifiers, err := metricsRepo.GetLastUncommitedMetrics(ctx)
+	viewIdentifiers, err := MetricsRepo.GetLastUncommitedMetrics(ctx)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func ProcessMetrics(ctx context.Context) error {
 	}
 
 	// 4.
-	metricsRepo.CommitMetrics(ctx, viewIdentifiers)
+	MetricsRepo.CommitMetrics(ctx, viewIdentifiers)
 
 	return nil
 }
@@ -75,12 +75,12 @@ type HistoryUpdatesPayload struct {
 }
 
 func HistoryUpdates(ctx context.Context, viewIdentifiers []entity.ViewIdentifier) error {
-	history, err := metricsRepo.GetCalculatedHistory(ctx, viewIdentifiers)
+	history, err := MetricsRepo.GetCalculatedHistory(ctx, viewIdentifiers)
 	if err != nil {
 		return err
 	}
 
-	err = historyRepo.BatchInsertHistory(ctx, history)
+	err = HistoryRepo.BatchInsertHistory(ctx, history)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ type UserUpdatesPayload struct {
 }
 
 func UserUpdates(ctx context.Context, userIds []string) error {
-	userHistory, err := historyRepo.GetHistoryByUserIds(ctx, userIds)
+	userHistory, err := HistoryRepo.GetHistoryByUserIds(ctx, userIds)
 	if err != nil {
 		return err
 	}
@@ -135,11 +135,11 @@ func UserUpdates(ctx context.Context, userIds []string) error {
 		return err
 	}
 
-	err = dotsRepo.CreateDots(ctx, result.success)
+	err = DotsRepo.CreateDots(ctx, result.success)
 	if err != nil {
 		return err
 	}
-	err = bucketRepo.UpsertBuckets(ctx, result.bucketUpdates...)
+	err = BucketRepo.UpsertBuckets(ctx, result.bucketUpdates...)
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ type AddingDotsResult struct {
 
 // try to update dot and separate bucket
 func AddDotsToBucket(ctx context.Context, dots []entity.DotHistory) (*AddingDotsResult, error) {
-	buckets, err := bucketRepo.GetAllBuckets(ctx)
+	buckets, err := BucketRepo.GetAllBuckets(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +222,7 @@ type SeparateBucketPayload struct {
 }
 
 func SeparateBuckets(bucketIds []string) error {
-	buckets, err := bucketRepo.GetBuckets(context.Background(), bucketIds...)
+	buckets, err := BucketRepo.GetBuckets(context.Background(), bucketIds...)
 	if err != nil {
 		log.Print(err.Error())
 		return err
@@ -250,7 +250,7 @@ func SeparateBuckets(bucketIds []string) error {
 		updates = append(updates, *bucket)
 	}
 
-	err = bucketRepo.UpsertBuckets(context.Background(), updates...)
+	err = BucketRepo.UpsertBuckets(context.Background(), updates...)
 	if err != nil {
 		return err
 	}

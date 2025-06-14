@@ -1,2 +1,2 @@
-GET http://localhost:8080/meta/681faa25e56ffb08a70ae230
+GET http://51.250.104.121:8080/meta/683c7153d4d32ae711807ed6
 Accept: application/json

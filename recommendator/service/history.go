@@ -7,7 +7,7 @@ import (
 )
 
 func GetUserHistory(userId string) ([]dto.HistoryDto, error) {
-	userHistory, err := historyRepo.GetHistoryAbout30Days(context.Background(), userId)
+	userHistory, err := HistoryRepo.GetHistoryAbout30Days(context.Background(), userId)
 	if err != nil {
 		return nil, err
 	}

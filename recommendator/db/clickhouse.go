@@ -10,13 +10,13 @@ type ClickhouseDB struct {
 	db clickhouse.Conn
 }
 
-func NewClickhouseDB(config config.ApplicationConfig) *ClickhouseDB {
+func NewClickhouseDB(config *config.ClickhouseConfig) *ClickhouseDB {
 	opts := clickhouse.Options{
-		Addr: []string{config.ClickhouseConfig.URI},
+		Addr: []string{config.URI},
 		Auth: clickhouse.Auth{
-			Database: config.ClickhouseConfig.Database,
-			Username: config.ClickhouseConfig.User,
-			Password: config.ClickhouseConfig.Password,
+			Database: config.Database,
+			Username: config.User,
+			Password: config.Password,
 		},
 	}
 

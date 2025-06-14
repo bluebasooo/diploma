@@ -8,11 +8,11 @@ import (
 )
 
 func GetPagedVideoPool(id string, page int, pageSize int) (*dto.PoolDto, error) {
-	dot, err := dotsRepo.GetDot(context.Background(), id)
+	dot, err := DotsRepo.GetDot(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
-	bucket, err := bucketRepo.GetBucket(context.Background(), dot.BucketID)
+	bucket, err := BucketRepo.GetBucket(context.Background(), dot.BucketID)
 	if err != nil {
 		return nil, err
 	}

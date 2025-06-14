@@ -27,7 +27,7 @@ func AddDot(bucket *entity.Bucket, dot *entity.DotHistory) (*entity.Bucket, erro
 			return dotId
 		})
 
-	bucketDots, err := dotsRepo.GetDots(context.Background(), bucketDotsIds)
+	bucketDots, err := DotsRepo.GetDots(context.Background(), bucketDotsIds)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func canSplitBucketOver(dotsFromBucket []entity.DotHistory, firstDot *entity.Dot
 
 func ProcessSplitBucket(bucket *entity.Bucket) (*entity.Bucket, *entity.Bucket) {
 	anomalyId := oneAnomalyDot(bucket)
-	anomalyDot, err := dotsRepo.GetDot(context.Background(), anomalyId)
+	anomalyDot, err := DotsRepo.GetDot(context.Background(), anomalyId)
 	if err != nil {
 		return nil, nil
 	}
@@ -99,7 +99,7 @@ func ProcessSplitBucket(bucket *entity.Bucket) (*entity.Bucket, *entity.Bucket) 
 			return dotId
 		})
 
-	dotsFromBucket, err := dotsRepo.GetDots(context.Background(), dotIdsFromBucket)
+	dotsFromBucket, err := DotsRepo.GetDots(context.Background(), dotIdsFromBucket)
 	if err != nil {
 		return nil, nil
 	}
@@ -121,11 +121,11 @@ func ProcessSplitBucket(bucket *entity.Bucket) (*entity.Bucket, *entity.Bucket) 
 			return pair.Key
 		})
 
-	firstDots, err := dotsRepo.GetDots(context.Background(), firstDotsIds)
+	firstDots, err := DotsRepo.GetDots(context.Background(), firstDotsIds)
 	if err != nil {
 		return nil, nil
 	}
-	secondDots, err := dotsRepo.GetDots(context.Background(), secondDotsIds)
+	secondDots, err := DotsRepo.GetDots(context.Background(), secondDotsIds)
 	if err != nil {
 		return nil, nil
 	}

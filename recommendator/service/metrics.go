@@ -12,12 +12,12 @@ func WriteMetrics(ctx context.Context, metrics []dto.MetricDto) error {
 	for _, metric := range metrics {
 		metricEntities = append(metricEntities, *mapper.ToMetric(&metric))
 	}
-	err := metricsRepo.BatchInsertMetrics(ctx, metricEntities)
+	err := MetricsRepo.BatchInsertMetrics(ctx, metricEntities)
 	if err != nil {
 		return err
 	}
 
-	updatesHandler.Increment(len(metrics))
+	UpdatesHandler.Increment(len(metrics))
 
 	return nil
 }

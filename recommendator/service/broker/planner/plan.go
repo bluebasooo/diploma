@@ -3,7 +3,7 @@ package planner
 import (
 	"bytes"
 	"context"
-	"dev/bluebasooo/video-recomendator/service/broker/task "
+	"dev/bluebasooo/video-recomendator/service/broker/task"
 	"encoding/json"
 	"github.com/segmentio/kafka-go"
 )
