@@ -18,6 +18,10 @@ func GroupByValueProp[K comparable, V any](vals []V, keyExtractor func(V) K) map
 }
 
 func Plain[K comparable, V any, R any](vals map[K]V, extractor func(K, V) R) []R {
+	if len(vals) == 0 {
+		return make([]R, 0)
+	}
+
 	res := make([]R, 0, len(vals))
 	for k, v := range vals {
 		res = append(res, extractor(k, v))
@@ -44,25 +48,34 @@ func sortedByValueKeys[K comparable, V comparable](m map[K]V, comparator func(on
 }
 
 func maxGrow[K cmp.Ordered](a []Pair[K, float64]) (int, float64) {
-	if len(a) < 2 {
+	if len(a) < 3 {
 		return 0, 1.0
 	}
 
-	max := a[1].Value - a[0].Value
-	prev := a[1].Value - a[0].Value
-	grow := 1.0
-	index := -1
+	prev := a[2].Value - a[1].Value
+	prevPrev := a[1].Value - a[0].Value
+	maxgrow := absGrow(prev, prevPrev)
+	index := 2
 
-	for i := 2; i < len(a); i++ {
+	for i := 3; i < len(a); i++ {
 		prev = a[i].Value - a[i-1].Value
-		if prev > max {
-			max = prev
+		prevPrev = a[i-1].Value - a[i-2].Value
+		currGrow := absGrow(prev, prevPrev)
+		if currGrow > maxgrow {
+			maxgrow = currGrow
 			index = i
-			grow = max / prev
 		}
 	}
 
-	return index, grow
+	return index, maxgrow
+}
+
+func absGrow(first float64, second float64) float64 {
+	if first > second {
+		return first / second
+	}
+
+	return second / first
 }
 
 func toPairs[K comparable, V any](m map[K]V) []Pair[K, V] {

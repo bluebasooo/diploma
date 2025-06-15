@@ -3,12 +3,12 @@ package dto
 import "time"
 
 type MetricDto struct {
-	UserID    string
-	VideoID   string
-	Type      string
-	Value     float64
-	CreatedAt time.Time
-	ViewID    string
+	UserID    string    `json:"userID"`
+	VideoID   string    `json:"videoID"`
+	Type      string    `json:"type"`
+	Value     float64   `json:"value"`
+	CreatedAt time.Time `json:"createdAt"`
+	ViewID    string    `json:"viewID"`
 }
 
 // maybe grpc

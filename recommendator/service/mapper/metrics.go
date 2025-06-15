@@ -9,6 +9,7 @@ func ToMetric(metricDto *dto.MetricDto) *entity.Metric {
 	return &entity.Metric{
 		UserID:    metricDto.UserID,
 		VideoID:   metricDto.VideoID,
+		ViewID:    metricDto.ViewID,
 		Type:      metricDto.Type,
 		Value:     metricDto.Value,
 		CreatedAt: metricDto.CreatedAt,

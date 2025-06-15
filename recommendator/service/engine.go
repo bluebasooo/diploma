@@ -8,6 +8,7 @@ import (
 	"dev/bluebasooo/video-recomendator/service/broker"
 	"dev/bluebasooo/video-recomendator/utils"
 	"log"
+	"math"
 	"sync"
 	"time"
 )
@@ -36,7 +37,20 @@ var (
 // 4. Коммитим метрику - добавляем тип PROCESSED
 
 func Loop() {
-	errs := make(chan error)
+	errs := make(chan error, 1000)
+
+	go func() {
+		historyUpdateBroker.EventLoop(errs)
+	}()
+
+	go func() {
+		userUpdatesBroker.EventLoop(errs)
+	}()
+
+	go func() {
+		separateBucketBroker.EventLoop(errs)
+	}()
+
 	for {
 		select {
 		case <-UpdatesHandler.Producer:
@@ -45,7 +59,9 @@ func Loop() {
 				errs <- err
 			}
 		case err := <-errs:
-			log.Print(err)
+			if err != nil {
+				log.Print(err)
+			}
 		}
 	}
 }
@@ -54,13 +70,19 @@ func ProcessMetrics(ctx context.Context) error {
 	// 1.
 	viewIdentifiers, err := MetricsRepo.GetLastUncommitedMetrics(ctx)
 	if err != nil {
+		log.Fatal(err)
 		return err
+	}
+
+	if viewIdentifiers == nil {
+		return nil
 	}
 
 	err = historyUpdateBroker.AsyncExecution(&HistoryUpdatesPayload{
 		ViewIdentifiers: viewIdentifiers,
 	})
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
@@ -77,11 +99,13 @@ type HistoryUpdatesPayload struct {
 func HistoryUpdates(ctx context.Context, viewIdentifiers []entity.ViewIdentifier) error {
 	history, err := MetricsRepo.GetCalculatedHistory(ctx, viewIdentifiers)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
 	err = HistoryRepo.BatchInsertHistory(ctx, history)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
@@ -95,6 +119,7 @@ func HistoryUpdates(ctx context.Context, viewIdentifiers []entity.ViewIdentifier
 		UserIds: updates,
 	})
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
@@ -108,6 +133,7 @@ type UserUpdatesPayload struct {
 func UserUpdates(ctx context.Context, userIds []string) error {
 	userHistory, err := HistoryRepo.GetHistoryByUserIds(ctx, userIds)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
@@ -132,17 +158,20 @@ func UserUpdates(ctx context.Context, userIds []string) error {
 
 	result, err := AddDotsToBucket(ctx, dots)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
 	err = DotsRepo.CreateDots(ctx, result.success)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
-	err = BucketRepo.UpsertBuckets(ctx, result.bucketUpdates...)
-	if err != nil {
-		return err
-	}
+	//err = BucketRepo.UpsertBuckets(ctx, result.bucketUpdates...)
+	//if err != nil {
+	//	log.Fatal(err)
+	//	return err
+	//}
 
 	bucketToSeparate := Plain(
 		result.separation,
@@ -154,6 +183,7 @@ func UserUpdates(ctx context.Context, userIds []string) error {
 		bucketIds: bucketToSeparate,
 	})
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
@@ -169,51 +199,70 @@ type AddingDotsResult struct {
 
 // try to update dot and separate bucket
 func AddDotsToBucket(ctx context.Context, dots []entity.DotHistory) (*AddingDotsResult, error) {
-	buckets, err := BucketRepo.GetAllBuckets(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	fail := make([]entity.DotHistory, 0)
 	success := make([]entity.DotHistory, 0)
-	bucketUpdates := make([]entity.Bucket, 0)
+	//bucketUpdates := make([]entity.Bucket, 0)
 
 	trySeparate := make(map[string]int)
 	for i, dot := range dots {
+		maybeExist, err := DotsRepo.GetDot(ctx, dot.GetDotID())
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
 
-		var minimus float64
+		buckets, err := BucketRepo.GetAllBuckets(ctx)
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+
 		var bestMatchBucketId string
-		for bucketId, bucket := range buckets {
-			dist, ok := ShouldAddToBucket(&bucket, &dot)
-			if ok && minimus > dist {
-				minimus = dist
-				bestMatchBucketId = bucketId
+		if maybeExist == nil { // try to find best bucket for new dot
+			var minimus = math.MaxFloat64
+			var notFoundBucketId string
+			for bucketId, bucket := range buckets {
+				dist, ok := ShouldAddToBucket(&bucket, &dot)
+				if ok && minimus >= dist {
+					minimus = dist
+					bestMatchBucketId = bucketId
+				} else if minimus >= dist {
+					notFoundBucketId = bucketId
+				}
 			}
+
+			if bestMatchBucketId == "" {
+				bestMatchBucketId = notFoundBucketId
+			}
+		} else {
+			bestMatchBucketId = maybeExist.BucketID
 		}
 
-		if bestMatchBucketId != "" {
-			bucketToAdd := buckets[bestMatchBucketId]
-			resultBucket, err := AddDot(&bucketToAdd, &dot)
-			if err != nil {
-				log.Print(err.Error())
-				fail = append(fail, dot)
-				continue
-			}
-			bucketUpdates = append(bucketUpdates, *resultBucket)
-
-			dots[i].BucketID = bucketToAdd.ID
-			success = append(success, dots[i])
-
-			trySeparate[bestMatchBucketId] += 1
+		bucketToAdd := buckets[bestMatchBucketId]
+		resultBucket, err := AddDot(bucketToAdd.ID, &dot)
+		if err != nil {
+			log.Fatal(err)
+			log.Print(err.Error())
+			fail = append(fail, dot)
+			continue
 		}
+		//bucketUpdates = append(bucketUpdates, *resultBucket)
+
+		dots[i].BucketID = bucketToAdd.ID
+		success = append(success, dots[i])
+
+		if len(resultBucket.BucketDotsToDistToCenter) < 5 {
+			continue
+		}
+		trySeparate[bestMatchBucketId] += 1
 
 	}
 
 	return &AddingDotsResult{
-		success:       success,
-		fail:          fail,
-		bucketUpdates: bucketUpdates,
-		separation:    trySeparate,
+		success: success,
+		fail:    fail,
+		//bucketUpdates: bucketUpdates,
+		separation: trySeparate,
 	}, nil
 }
 
@@ -222,38 +271,38 @@ type SeparateBucketPayload struct {
 }
 
 func SeparateBuckets(bucketIds []string) error {
-	buckets, err := BucketRepo.GetBuckets(context.Background(), bucketIds...)
-	if err != nil {
-		log.Print(err.Error())
-		return err
-	}
-
 	wg := sync.WaitGroup{}
-	result := make(chan *entity.Bucket)
-	defer close(result)
 
-	for _, val := range buckets {
+	for _, val := range bucketIds {
 		wg.Add(1)
-		go func(bucket *entity.Bucket) {
+		go func(bucketId string) {
 			defer wg.Done()
+			var bucket *entity.Bucket
+			for {
+				if BucketRepo.LockOnBucket(val) {
+					bucket, _ = BucketRepo.GetBucket(context.Background(), bucketId)
+					break
+				}
+			}
+			defer BucketRepo.UnlockOnBucket(bucketId)
+			if bucket.IsSeparated {
+				return
+			}
 
 			oBucket, tBucket := ProcessSplitBucket(bucket)
-			result <- oBucket
-			result <- tBucket
-		}(&val)
+			if oBucket == nil && tBucket == nil {
+				return
+			}
+
+			bucket.IsSeparated = true
+			err := BucketRepo.UpsertBuckets(context.Background(), *bucket, *oBucket, *tBucket)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}(val)
 	}
 
 	wg.Wait()
-
-	updates := make([]entity.Bucket, 0, len(result))
-	for bucket := range result {
-		updates = append(updates, *bucket)
-	}
-
-	err = BucketRepo.UpsertBuckets(context.Background(), updates...)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }

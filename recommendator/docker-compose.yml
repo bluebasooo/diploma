@@ -13,9 +13,11 @@ services:
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - app-network
 
   mongodb:
-    container_name: mongodb
+    container_name: mongodb-rec
     image: mongo:6.0.5
     restart: always
     environment:
@@ -30,3 +32,11 @@ services:
       - mongodb-data:/data/db
     networks:
       - app-network
+
+volumes:
+  mongodb-data:
+  clickhouse_data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -16,17 +16,17 @@ const (
 
 // only metrics from viewing
 type Metric struct {
-	ID        string    `sql:"id"`
-	UserID    string    `sql:"user_id"`
-	VideoID   string    `sql:"video_id"`
-	ViewID    string    `sql:"view_id"`
-	Type      string    `sql:"type"`
-	Value     float64   `sql:"value"`
-	CreatedAt time.Time `sql:"created_at"`
+	ID        string    `ch:"id"`
+	UserID    string    `ch:"user_id"`
+	VideoID   string    `ch:"video_id"`
+	ViewID    string    `ch:"view_id"`
+	Type      string    `ch:"type"`
+	Value     float64   `ch:"value"`
+	CreatedAt time.Time `ch:"created_at"`
 }
 
 type ViewIdentifier struct {
-	UserID  string
-	VideoID string
-	ViewID  string
+	ViewID  string `ch:"view_id"`
+	UserID  string `ch:"user_id"`
+	VideoID string `ch:"video_id"`
 }

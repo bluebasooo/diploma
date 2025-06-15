@@ -19,15 +19,15 @@ func NewMetricsRepo(db *db.ClickhouseDB) *MetricsRepo {
 
 const (
 	getLastUncommitedMetrics = `
-	SELECT view_id
-	FROM (
-		SELECT 
-			view_id, user_id, video_id,
-			argMax(type, created_at) AS latest_type
-		FROM metrics
-		GROUP BY view_id
-	)
-	WHERE latest_type = 'END'
+		SELECT view_id, user_id, video_id
+		FROM (
+				 SELECT
+					 view_id, user_id, video_id,
+					 argMax(type, created_at) AS latest_type
+				 FROM metrics
+				 GROUP BY view_id, user_id, video_id
+			)
+		WHERE latest_type = 'END'
 	`
 
 	insertMetrics = `
@@ -38,24 +38,23 @@ const (
 		type,
 		value,
 		created_at
-	) VALUES (
-		%s
-	)
+	) VALUES
+	%s
 	`
 
 	getCalculatedHistory = `
 	SELECT 
-		user_id, video_id, min(created_at),
+		user_id, video_id, min(created_at) as created_at,
 		SUM(
 			CASE 
 				WHEN type = 'START' THEN 0
-				WHEN type = 'LIKE' THEN 1.0 * value
-				WHEN type = 'DISLIKE' THEN -1.0 * value
-				WHEN type = 'WATCH_TIME' THEN 0.1 * value
-				WHEN type = 'SHARE' THEN 1.0 * value
+				WHEN type = 'LIKE' THEN 50.0 * value
+				WHEN type = 'DISLIKE' THEN -50.0 * value
+				WHEN type = 'WATCH_TIME' THEN 1.5 * value
+				WHEN type = 'SHARE' THEN 70.0 * value
 				WHEN type = 'END' THEN 0.0
 			END
-		) as metric
+		) as value
 	FROM metrics
 	WHERE (view_id, user_id, video_id) IN (%s)
 	GROUP BY view_id, user_id, video_id
@@ -82,7 +81,7 @@ func (r *MetricsRepo) CommitMetrics(ctx context.Context, viewIdentifiers []entit
 func (r *MetricsRepo) BatchInsertMetrics(ctx context.Context, metrics []entity.Metric) error {
 	values := make([]string, 0, len(metrics))
 	for _, metric := range metrics {
-		pattern := "'%s', '%s', '%s', '%s', %f, '%s'"
+		pattern := "('%s', '%s', '%s', '%s', %f, '%s')"
 		value := fmt.Sprintf(
 			pattern,
 			metric.UserID,
@@ -90,13 +89,14 @@ func (r *MetricsRepo) BatchInsertMetrics(ctx context.Context, metrics []entity.M
 			metric.ViewID,
 			metric.Type,
 			metric.Value,
-			metric.CreatedAt.Format(time.RFC3339),
+			metric.CreatedAt.Format(time.DateTime),
 		)
 		values = append(values, value)
 	}
 	valuesStr := strings.Join(values, ",\n")
+	insertQuery := fmt.Sprintf(insertMetrics, valuesStr)
 
-	return r.db.Db().AsyncInsert(ctx, insertMetrics, false, valuesStr)
+	return r.db.Db().AsyncInsert(ctx, insertQuery, true, valuesStr)
 }
 
 func (r *MetricsRepo) GetCalculatedHistory(ctx context.Context, viewIdentifiers []entity.ViewIdentifier) ([]entity.History, error) {
@@ -105,8 +105,9 @@ func (r *MetricsRepo) GetCalculatedHistory(ctx context.Context, viewIdentifiers 
 		values = append(values, fmt.Sprintf("('%s', '%s', '%s')", viewIdentifier.ViewID, viewIdentifier.UserID, viewIdentifier.VideoID))
 	}
 	valuesStr := strings.Join(values, ",")
+	query := fmt.Sprintf(getCalculatedHistory, valuesStr)
 
-	rows, err := r.db.Db().Query(ctx, getCalculatedHistory, valuesStr)
+	rows, err := r.db.Db().Query(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +116,7 @@ func (r *MetricsRepo) GetCalculatedHistory(ctx context.Context, viewIdentifiers 
 	var histories []entity.History
 	for rows.Next() {
 		var history entity.History
-		err = rows.Scan(&history)
+		err = rows.ScanStruct(&history)
 		if err != nil {
 			return nil, err
 		}
@@ -134,7 +135,7 @@ func (r *MetricsRepo) GetLastUncommitedMetrics(ctx context.Context) ([]entity.Vi
 	var viewIdentifiers []entity.ViewIdentifier
 	for rows.Next() {
 		var viewIdentifier entity.ViewIdentifier
-		err = rows.Scan(&viewIdentifier)
+		err = rows.ScanStruct(&viewIdentifier)
 		if err != nil {
 			return nil, err
 		}

@@ -45,7 +45,7 @@ type DummyBroker[F any] struct {
 
 func NewDummyBroker[F any](exec executor.Execute[F]) Broker[F] {
 	return &DummyBroker[F]{
-		queued:  make(chan *F),
+		queued:  make(chan *F, 100),
 		execute: exec,
 	}
 }
@@ -57,7 +57,11 @@ func (b *DummyBroker[F]) AsyncExecution(payload *F) error {
 
 func (b *DummyBroker[F]) EventLoop(errs chan<- error) {
 	for {
-		payload := <-b.queued
-		errs <- b.execute(payload)
+		select {
+		case payload := <-b.queued:
+			go func() {
+				errs <- b.execute(payload)
+			}()
+		}
 	}
 }

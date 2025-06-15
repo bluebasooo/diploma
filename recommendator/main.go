@@ -23,6 +23,7 @@ func main() {
 			log.Fatal("Error loading .env file")
 		}
 	}
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	appConfig := config.GetApplicationConfig()
 
@@ -40,6 +41,8 @@ func main() {
 	go func() {
 		service.Loop()
 	}()
+
+	log.Println("Loop started")
 
 	server := base_server.FustestServerUSee{}
 	apiInitializer := []base_server.RouteInitializer{

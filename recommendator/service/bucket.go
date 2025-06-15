@@ -3,12 +3,18 @@ package service
 import (
 	"context"
 	"dev/bluebasooo/video-recomendator/entity"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
 	"sort"
 )
 
 func ShouldAddToBucket(bucket *entity.Bucket, dotToAdd *entity.DotHistory) (float64, bool) {
-	if len(bucket.BucketDotsToDistToCenter) == 1 {
+	if len(bucket.BucketDotsToDistToCenter) <= 1 {
 		return 0, true
+	}
+
+	if bucket.IsSeparated {
+		return 0, false
 	}
 
 	distance := distToCenter(bucket.BucketCenter, dotToAdd)
@@ -20,7 +26,16 @@ func ShouldAddToBucket(bucket *entity.Bucket, dotToAdd *entity.DotHistory) (floa
 	return distance, distance <= val
 }
 
-func AddDot(bucket *entity.Bucket, dot *entity.DotHistory) (*entity.Bucket, error) {
+func AddDot(bucketId string, dot *entity.DotHistory) (*entity.Bucket, error) {
+	var bucket *entity.Bucket
+	for {
+		if BucketRepo.LockOnBucket(bucketId) {
+			bucket, _ = BucketRepo.GetBucket(context.Background(), bucketId)
+			break
+		}
+	}
+	defer BucketRepo.UnlockOnBucket(bucketId)
+
 	bucketDotsIds := Plain(
 		bucket.BucketDotsToDistToCenter,
 		func(dotId entity.VideoDotId, dist float64) entity.VideoDotId {
@@ -32,18 +47,35 @@ func AddDot(bucket *entity.Bucket, dot *entity.DotHistory) (*entity.Bucket, erro
 		return nil, err
 	}
 
-	newBucketDots := append(bucketDots, *dot)
+	// если точка уже существует просто обновляем инфу о ней в бакете
+	exist := false
+	for i, val := range bucketDots {
+		if val.ID == dot.ID {
+			bucketDots[i] = *dot
+			exist = true
+		}
+	}
+	if !exist {
+		bucketDots = append(bucketDots, *dot)
+	}
 
-	center := calculateCenter(newBucketDots)
+	center := calculateCenter(bucketDots)
 	bucket.BucketCenter = center
 
-	distsToCenter := recalculateDistsToCenter(center, newBucketDots)
+	distsToCenter := recalculateDistsToCenter(center, bucketDots)
 
-	return &entity.Bucket{
+	renewedBucket := &entity.Bucket{
 		ID:                       bucket.ID,
 		BucketDotsToDistToCenter: distsToCenter,
 		BucketCenter:             center,
-	}, nil
+	}
+
+	err = BucketRepo.UpsertBuckets(context.Background(), *renewedBucket)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	return renewedBucket, nil
 }
 
 func recalculateDistsToCenter(center map[string]float64, dots []entity.DotHistory) map[string]float64 {
@@ -74,6 +106,9 @@ func canSplitBucketOver(dotsFromBucket []entity.DotHistory, firstDot *entity.Dot
 	firstsDists := make([]Pair[string, float64], 0, len(dotsFromBucket))
 
 	for _, dot := range dotsFromBucket {
+		if dot.GetDotID() == firstDot.GetDotID() {
+			continue
+		}
 		distOverSplitted := distBetweenDots(firstDot, &dot)
 		firstsDists = append(firstsDists, Pair[string, float64]{Key: dot.GetDotID(), Value: distOverSplitted})
 	}
@@ -84,7 +119,7 @@ func canSplitBucketOver(dotsFromBucket []entity.DotHistory, firstDot *entity.Dot
 
 	index, maxGrows := maxGrow(firstsDists)
 
-	return maxGrows >= 2.0, firstsDists[:index], firstsDists[index:]
+	return maxGrows >= 100, firstsDists[:index], firstsDists[index:]
 }
 
 func ProcessSplitBucket(bucket *entity.Bucket) (*entity.Bucket, *entity.Bucket) {
@@ -144,6 +179,7 @@ func proceessCreateBucket(dots []entity.DotHistory) *entity.Bucket {
 	}
 
 	return &entity.Bucket{
+		ID:                       primitive.NewObjectID().Hex(),
 		BucketCenter:             center,
 		BucketDotsToDistToCenter: distsToCenter,
 	}

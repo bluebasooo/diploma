@@ -4,7 +4,10 @@ import (
 	"context"
 	mongoDb "dev/bluebasooo/video-common/db"
 	"dev/bluebasooo/video-recomendator/entity"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type DotsRepo struct {
@@ -17,36 +20,44 @@ func NewDotsRepo(db *mongoDb.MongoDB) *DotsRepo {
 
 func (r *DotsRepo) GetDots(ctx context.Context, dotIds []string) ([]entity.DotHistory, error) {
 	collection := r.db.GetCollection("dots")
-	dots := make([]entity.DotHistory, 0)
+	pipeline := mongo.Pipeline{
+		{{Key: "$match", Value: bson.M{"_id.id": bson.M{"$in": dotIds}}}},
+		{{Key: "$sort", Value: bson.D{{"_id.id", 1}, {"_id.date_update", -1}}}},
+		{{Key: "$group", Value: bson.M{
+			"_id": bson.M{"id": "$_id.id"},
+			"doc": bson.M{"$first": "$$ROOT"},
+		}}},
+		{{Key: "$replaceRoot", Value: bson.M{"newRoot": "$doc"}}},
+	}
 
-	cursor, err := collection.Find(ctx, bson.M{"_id": bson.M{"$in": dotIds}})
+	cursor, err := collection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(ctx)
 
-	err = cursor.All(ctx, &dots)
-	if err != nil {
+	var results []entity.DotHistory
+	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
-	// обработать случай если не найдено
-
-	return dots, nil
+	return results, nil
 }
 
 func (r *DotsRepo) GetDot(ctx context.Context, dotId string) (*entity.DotHistory, error) {
 	collection := r.db.GetCollection("dots")
-	var dot entity.DotHistory
-	cursor, err := collection.Find(ctx, bson.M{"_id": dotId})
+
+	filter := bson.M{"_id.id": dotId}
+	opts := options.FindOne().SetSort(bson.D{{"_id.date_update", -1}})
+
+	var result entity.DotHistory
+	err := collection.FindOne(ctx, filter, opts).Decode(&result)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-
-	err = cursor.Decode(&dot)
-	if err != nil {
-		return nil, err
-	}
-
-	return &dot, nil
+	return &result, nil
 }
 
 func (r *DotsRepo) CreateDots(ctx context.Context, dots []entity.DotHistory) error {

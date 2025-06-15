@@ -4,7 +4,10 @@ import (
 	"context"
 	"dev/bluebasooo/video-common/db"
 	"dev/bluebasooo/video-recomendator/entity"
+	"errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"log"
 	"maps"
 	"sync"
 
@@ -12,9 +15,10 @@ import (
 )
 
 type BucketRepo struct {
-	db          *db.MongoDB
-	bucketCache map[string]entity.Bucket
-	mu          sync.RWMutex
+	db           *db.MongoDB
+	bucketCache  map[string]entity.Bucket
+	bucketLocked map[string]*sync.Mutex
+	mu           sync.RWMutex
 }
 
 func (r *BucketRepo) fromCache(id string) (*entity.Bucket, bool) {
@@ -29,12 +33,25 @@ func (r *BucketRepo) fromCache(id string) (*entity.Bucket, bool) {
 	return &val, true
 }
 
+func (r *BucketRepo) LockOnBucket(id string) bool {
+	_, ok := r.bucketLocked[id]
+	if !ok {
+		r.bucketLocked[id] = &sync.Mutex{}
+	}
+	r.bucketLocked[id].Lock()
+	return true
+}
+
+func (r *BucketRepo) UnlockOnBucket(id string) {
+	r.bucketLocked[id].Unlock()
+}
+
 // if not found - no fail, but not return
 func (r *BucketRepo) fromCacheBatch(ids ...string) []entity.Bucket {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	buckets := make([]entity.Bucket, len(ids))
+	buckets := make([]entity.Bucket, 0, len(ids))
 	for _, id := range ids {
 		val, ok := r.bucketCache[id]
 		if !ok {
@@ -72,28 +89,11 @@ func (r *BucketRepo) copyCache() map[string]entity.Bucket {
 
 func NewBucketRepo(db *db.MongoDB) *BucketRepo {
 	return &BucketRepo{
-		db:          db,
-		bucketCache: make(map[string]entity.Bucket),
-		mu:          sync.RWMutex{},
+		db:           db,
+		bucketCache:  make(map[string]entity.Bucket),
+		bucketLocked: make(map[string]*sync.Mutex),
+		mu:           sync.RWMutex{},
 	}
-}
-
-func (r *BucketRepo) GetBucket(ctx context.Context, id string) (*entity.Bucket, error) {
-	val, ok := r.fromCache(id)
-	if ok {
-		return val, nil
-	}
-
-	collection := r.db.GetCollection("buckets")
-
-	var bucket entity.Bucket
-	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&bucket)
-	if err != nil {
-		return nil, err
-	}
-	r.toCache(bucket)
-
-	return &bucket, nil
 }
 
 type BucketToAdd struct {
@@ -116,7 +116,25 @@ func (r *BucketRepo) GetAllBuckets(ctx context.Context) (map[string]entity.Bucke
 		return nil, err
 	}
 
-	cursor.All(ctx, &buckets)
+	err = cursor.All(ctx, &buckets)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(buckets) == 0 {
+		bucket := entity.Bucket{
+			ID:                       primitive.NewObjectID().Hex(),
+			BucketDotsToDistToCenter: make(map[entity.VideoDotId]float64),
+			BucketCenter:             make(map[entity.VideoId]float64),
+			IsSeparated:              false,
+		}
+		err = r.UpsertBuckets(ctx, bucket)
+		if err != nil {
+			return nil, err
+		}
+
+		return r.copyCache(), nil
+	}
 
 	bucketById := make(map[string]entity.Bucket)
 	for _, val := range buckets {
@@ -126,6 +144,21 @@ func (r *BucketRepo) GetAllBuckets(ctx context.Context) (map[string]entity.Bucke
 	r.allToCache(bucketById)
 
 	return bucketById, nil
+}
+
+func (r *BucketRepo) GetBucket(ctx context.Context, id string) (*entity.Bucket, error) {
+	val, err := r.GetBuckets(ctx, id)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	if len(val) == 0 {
+		log.Fatal("bucket not found")
+		return nil, errors.New("bucket not found")
+	}
+
+	return &(val[0]), nil
 }
 
 func (r *BucketRepo) GetBuckets(ctx context.Context, ids ...string) ([]entity.Bucket, error) {
@@ -152,6 +185,7 @@ func (r *BucketRepo) UpsertBuckets(ctx context.Context, buckets ...entity.Bucket
 		update := bson.M{"$set": bson.M{
 			"dots_to_dist_to_center": bucket.BucketDotsToDistToCenter,
 			"center":                 bucket.BucketCenter,
+			"is_separated":           bucket.IsSeparated,
 		},
 		}
 

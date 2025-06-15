@@ -1,0 +1,23 @@
+POST http://localhost:8080/metrics/
+Content-Type: application/json
+
+{
+  "metrics": [
+    {
+      "userID": "user_2025",
+      "videoID": "typeA_8",
+      "type": "SHARE",
+      "value": 3,
+      "createdAt": "2025-06-15T21:50:50.393503293+03:00",
+      "viewID": "view_99_8"
+    },
+    {
+      "userID": "user_2025",
+      "videoID": "typeA_8",
+      "type": "SHARE",
+      "value": 10,
+      "createdAt": "2025-06-15T21:50:51.393503293+03:00",
+      "viewID": "view_99_8"
+    }
+  ]
+}

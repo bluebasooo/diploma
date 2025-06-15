@@ -25,6 +25,17 @@ func GetApplicationConfig() *ApplicationConfig {
 			Topic:      os.Getenv("KAFKA_TOPIC"),
 			GroupID:    os.Getenv("KAFKA_GROUP_ID"),
 		},
+		MongoConfig: config.MongoConfig{
+			Host:         os.Getenv("DB_MONGO_HOST"),
+			Port:         os.Getenv("DB_MONGO_PORT"),
+			User:         os.Getenv("DB_MONGO_USER"),
+			Password:     os.Getenv("DB_MONGO_PASSWORD"),
+			DatabaseName: os.Getenv("DB_MONGO_DATABASE_NAME"),
+			CollectionsNames: []string{
+				"dots",
+				"buckets",
+			},
+		},
 		Debug: true,
 	}
 }
